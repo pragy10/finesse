@@ -19,24 +19,23 @@ function FileUpload() {
       setMessage(res.data.message);
       setChunks(res.data.chunks);
     } catch (error) {
+      console.error("Upload failed:", error);
       setMessage("Upload failed.");
     }
   };
 
   return (
     <div>
+      <h2>📄 Upload a Document</h2>
       <input type="file" onChange={handleChange} />
       <button onClick={handleUpload}>Upload</button>
       <div>{message}</div>
       {chunks.length > 0 && (
-        <div>
-          <h3>Extracted Chunks:</h3>
-          <ul>
-            {chunks.map((chunk, index) => (
-              <li key={index}>{chunk}</li>
-            ))}
-          </ul>
-        </div>
+        <ul>
+          {chunks.map((chunk, index) => (
+            <li key={index}>{chunk}</li>
+          ))}
+        </ul>
       )}
     </div>
   );

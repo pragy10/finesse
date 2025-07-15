@@ -1,32 +1,29 @@
 const fs = require("fs");
-const mammoth = require("mammoth");
 const pdfParse = require("pdf-parse");
-const tesseract = require("tesseract.js");
-const path = require("path");
-const { simpleParser } = require("mailparser");
+const mammoth = require("mammoth");
+const Tesseract = require("tesseract.js");
 
 async function parseDocument(file) {
-  const ext = path.extname(file.originalname).toLowerCase();
-  let extractedText = "";
+  const ext = file.originalname.split(".").pop().toLowerCase();
+  const path = file.path;
 
-  if (ext === ".pdf") {
-    const dataBuffer = fs.readFileSync(file.path);
-    const data = pdfParse(dataBuffer);
-    extractedText = (await data).text;
-  } else if (ext === ".docx") {
-    const data = await mammoth.extractRawText({ path: file.path });
-    extractedText = data.value;
-  } else if ([".jpg", ".png", ".jpeg"].includes(ext)) {
-    const result = await tesseract.recognize(file.path, "eng");
-    extractedText = result.data.text;
-  } else if (ext === ".eml") {
-    const data = await simpleParser(fs.createReadStream(file.path));
-    extractedText = data.text;
-  } else {
-    throw new Error("Unsupported file type.");
+  if (ext === "pdf") {
+    const dataBuffer = fs.readFileSync(path);
+    const data = await pdfParse(dataBuffer);
+    return data.text;
   }
 
-  return extractedText;
+  if (ext === "docx") {
+    const result = await mammoth.extractRawText({ path });
+    return result.value;
+  }
+
+  if (["jpg", "jpeg", "png"].includes(ext)) {
+    const result = await Tesseract.recognize(path, "eng");
+    return result.data.text;
+  }
+
+  throw new Error("Unsupported file type.");
 }
 
 module.exports = parseDocument;

@@ -1,14 +1,14 @@
-import { useState } from 'react';
-import './App.css';
-import FileUpload from './components/FileUpload';
+import FileUpload from "./components/FileUpload";
+import ClauseSearch from "./components/ClauseSearch";
 
 function App() {
-  return(
-    <div>
-      <h1>File Upload</h1>
-      <FileUpload/>
+  return (
+    <div style={{ padding: "2rem" }}>
+      <h1>🧠 Finesse | Smart Claim Reasoning</h1>
+      <FileUpload />
+      <ClauseSearch />
     </div>
   );
 }
 
-export default App
+export default App;

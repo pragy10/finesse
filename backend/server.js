@@ -1,11 +1,12 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const path = require("path");
 const multer = require("multer");
 const parseDocument = require("./parsing/parseDocument");
+const storeChunks = require("./vector/storeChunks");
 
 const app = express();
-app.use(cors());
+app.use(cors({ origin: "http://localhost:5173" }));
 app.use(express.json());
 
 const storage = multer.diskStorage({
@@ -15,7 +16,6 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 app.post("/upload", upload.single("file"), async (req, res) => {
-    
   try {
     const extractedText = await parseDocument(req.file);
     const chunks = extractedText
@@ -23,15 +23,18 @@ app.post("/upload", upload.single("file"), async (req, res) => {
       .map((chunk) => chunk.trim())
       .filter(Boolean);
 
-    res.json({
-      message: "File parsed successfully",
-      text: extractedText,
-      chunks: chunks,
-    });
+    await storeChunks(chunks, { fileName: req.file.originalname });
 
+    res.json({
+      message: "File parsed and chunks stored successfully",
+      chunks,
+    });
   } catch (error) {
+    console.error("Upload error:", error);
     res.status(500).json({ error: "Parsing failed", details: error.message });
   }
 });
 
-app.listen(3001, () => console.log("Server running on http://localhost:3001"));
+app.use("/", require("./routes/query"));
+
+app.listen(3001, () => console.log("✅ Backend running on http://localhost:3001"));
