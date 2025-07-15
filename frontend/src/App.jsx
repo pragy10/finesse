@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import './App.css';
-import FileUpload from './FileUpload';
+import FileUpload from './components/FileUpload';
 
 function App() {
   return(
