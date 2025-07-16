@@ -1,1 +1,7 @@
-.env
+*.env
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.eml
+*.docx

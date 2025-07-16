@@ -4,6 +4,8 @@ const cors = require("cors");
 const multer = require("multer");
 const parseDocument = require("./parsing/parseDocument");
 const storeChunks = require("./vector/storeChunks");
+const clearCollection = require("./setup/clearCollection");
+const smartChunker = require("./setup/smartChunker");
 
 const app = express();
 app.use(cors({ origin: "http://localhost:5173" }));
@@ -17,17 +19,28 @@ const upload = multer({ storage });
 
 app.post("/upload", upload.single("file"), async (req, res) => {
   try {
-    const extractedText = await parseDocument(req.file);
-    const chunks = extractedText
-      .split("\n\n")
-      .map((chunk) => chunk.trim())
-      .filter(Boolean);
 
+    console.log("clearing previous documents...");
+    await clearCollection();
+
+    console.log("Parsing documents....")
+    const extractedText = await parseDocument(req.file);
+
+    console.log("smart chunking...");
+    const chunks = smartChunker(extractedText,500);
+
+    console.log(`created ${chunks.length} chunks`);
+    chunks.forEach((chunk,i)=>{
+      console.log(`chunk ${i+1}: ${chunk.substring(0,100)}...`);
+    });
+    
+    console.log("storing chunks in qdrant...");
     await storeChunks(chunks, { fileName: req.file.originalname });
 
     res.json({
       message: "File parsed and chunks stored successfully",
       chunks,
+      chunkCount: chunks.length
     });
   } catch (error) {
     console.error("Upload error:", error);
@@ -37,4 +50,4 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 
 app.use("/", require("./routes/query"));
 
-app.listen(3001, () => console.log("✅ Backend running on http://localhost:3001"));
+app.listen(3001, () => console.log("Backend running on http://localhost:3001"));

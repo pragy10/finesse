@@ -14,9 +14,8 @@ router.post("/search", async (req, res) => {
     });
     
     console.log("Qdrant result:", result);
-    console.log("Sending to frontend:", result.result || result); // Debug this
+    console.log("Sending to frontend:", result.result || result);
     
-    // Try this instead of just result.result
     res.json(result.result || result);
   } catch (err) {
     console.error("Search error:", err);
