@@ -11,6 +11,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@huggingface/inference": "^4.5.1",
     "@qdrant/js-client-rest": "^1.14.1",
     "cors": "^2.8.5",
@@ -20,6 +21,7 @@
     "mammoth": "^1.9.1",
     "multer": "^2.0.1",
     "pdf-parse": "^1.1.1",
-    "tesseract.js": "^6.0.1"
+    "tesseract.js": "^6.0.1",
+    "uuid": "^11.1.0"
   }
 }

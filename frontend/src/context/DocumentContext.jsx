@@ -14,14 +14,17 @@ export const useDocuments = () => {
 export const DocumentProvider = ({ children }) => {
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const fetchDocuments = async () => {
     try {
       setLoading(true);
+      setError(null);
       const res = await axios.get("http://localhost:3001/documents");
       setDocuments(res.data.documents);
     } catch (error) {
       console.error("Failed to fetch documents:", error);
+      setError("Failed to load documents");
     } finally {
       setLoading(false);
     }
@@ -31,7 +34,10 @@ export const DocumentProvider = ({ children }) => {
     setDocuments([]);
   };
 
-  // Load documents on mount
+  const addDocument = (document) => {
+    setDocuments(prev => [...prev, document]);
+  };
+
   useEffect(() => {
     fetchDocuments();
   }, []);
@@ -39,9 +45,12 @@ export const DocumentProvider = ({ children }) => {
   const value = {
     documents,
     loading,
+    error,
     fetchDocuments,
     clearDocuments,
-    totalCount: documents.length
+    addDocument,
+    totalCount: documents.length,
+    totalChunks: documents.reduce((total, doc) => total + (doc.chunkCount || 0), 0)
   };
 
   return (
