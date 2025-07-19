@@ -5,23 +5,47 @@ const getEmbedding = require("../vector/embed");
 
 router.post("/search", async (req, res) => {
   try {
-    const { query } = req.body;
+    const { query, fileName } = req.body;
+    
+    if (!query || !query.trim()) {
+      return res.status(400).json({ error: "Query is required" });
+    }
+
+    console.log(`[>] Searching for: "${query}"`);
     const vector = await getEmbedding(query);
+    console.log(`[>] Query embedding generated (length: ${vector.length})`);
     
-    const result = await qdrantClient.search("policy_documents", {
+    const searchParams = {
       vector,
-      limit: 5,
-    });
+      limit: 10,
+      with_payload: true,
+      score_threshold: 0.1
+    };
     
-    console.log("Qdrant result:", result);
-    console.log("Sending to frontend:", result.result || result);
+    if (fileName) {
+      searchParams.filter = {
+        must: [{ key: 'fileName', match: { value: fileName } }]
+      };
+    }
+
+    const result = await qdrantClient.search("policy_documents", searchParams);
+    console.log(`[>] Raw Qdrant response:`, result);
     
-    res.json(result.result || result);
+    // Fix: Handle the response correctly
+    const results = result.result || result || [];
+    console.log(`[✓] Found ${results.length} matches`);
+    
+    if (results.length > 0) {
+      results.forEach((item, i) => {
+        console.log(`Match ${i + 1}: Score ${item.score}, File: ${item.payload?.fileName}`);
+      });
+    }
+    
+    res.json(results); // Send the actual results array
   } catch (err) {
-    console.error("Search error:", err);
-    res.status(500).json({ error: "Search failed" });
+    console.error("[x] Search error:", err);
+    res.status(500).json({ error: "Search failed", details: err.message });
   }
 });
-
 
 module.exports = router;

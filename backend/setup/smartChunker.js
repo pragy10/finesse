@@ -18,7 +18,7 @@ function smartChunker(text, maxChunkSize=500){
     }
 
     if(currentChunk) chunks.push(currentChunk.trim());
-    return chunks;
+    return chunks.filter(chunk => chunk.length>0);
 }
 
 module.exports = smartChunker;

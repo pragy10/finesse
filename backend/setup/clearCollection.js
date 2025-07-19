@@ -5,9 +5,10 @@ async function clearCollection(collectionName = 'policy_documents') {
         await qdrantClient.delete(collectionName, {
             filter: {} 
         });
-        console.log(`Cleared all documents from ${collectionName}`);
+        console.log(`[✓] Cleared all documents from ${collectionName}`);
     } catch (error) {
-        console.error('Error clearing collection:', error);
+        console.error('[x] Error clearing collection:', error);
+        throw error;
     }
 }
 
