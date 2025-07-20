@@ -20,7 +20,6 @@ function Modal({
     fullscreen: 'modal-fullscreen'
   };
 
-  // Close modal on escape key
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === 'Escape' && isOpen) {
@@ -85,7 +84,6 @@ function Modal({
   );
 }
 
-// Modal Compound Components
 Modal.Header = ({ children, className = '' }) => (
   <div className={`modal-section-header ${className}`}>
     {children}

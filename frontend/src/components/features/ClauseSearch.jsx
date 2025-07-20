@@ -68,7 +68,6 @@ function ClauseSearch() {
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
-    // Could add a toast notification here
   };
 
   const exportResults = () => {

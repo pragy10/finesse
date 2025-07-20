@@ -11,7 +11,7 @@ function AIAssistant() {
   const [conversation, setConversation] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState("");
-  const [smartMode, setSmartMode] = useState(true); // Smart processing by default
+  const [smartMode, setSmartMode] = useState(true); 
   
   const { documents } = useDocuments();
 
@@ -31,13 +31,12 @@ function AIAssistant() {
     setLoading(true);
 
     try {
-      // Use smart endpoint for better processing
       const endpoint = smartMode ? '/ask-smart' : '/ask';
       
       const res = await axios.post(`http://localhost:3001${endpoint}`, {
         query: currentQuery.trim(),
         fileName: selectedDoc || undefined,
-        returnStructured: false // Get conversational response
+        returnStructured: false 
       });
 
       const aiMessage = {
@@ -45,7 +44,7 @@ function AIAssistant() {
         content: res.data.response,
         confidence: res.data.confidence,
         sourceChunks: res.data.sourceChunks,
-        parsedQuery: res.data.parsedQuery, // New: show what AI understood
+        parsedQuery: res.data.parsedQuery, 
         metadata: res.data.metadata,
         timestamp: new Date().toISOString()
       };
@@ -75,7 +74,7 @@ function AIAssistant() {
     try {
       const res = await axios.post("http://localhost:3001/ask-smart", {
         query: quickQuery.trim(),
-        returnStructured: true // Get structured decision
+        returnStructured: true 
       });
 
       const decision = res.data.decision;

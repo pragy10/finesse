@@ -101,7 +101,6 @@ function Navigation({ variant = 'header' }) {
     }
   ];
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = () => setActiveDropdown(null);
     if (activeDropdown) {
@@ -210,7 +209,6 @@ function Navigation({ variant = 'header' }) {
     );
   }
 
-  // Default header navigation
   return (
     <nav className="header-navigation">
       <ul className="nav-list">

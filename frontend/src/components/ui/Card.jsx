@@ -40,7 +40,6 @@ const Card = React.forwardRef(({
   );
 });
 
-// Compound components
 const CardHeader = React.forwardRef(({ className = '', children, ...props }, ref) => (
   <div ref={ref} className={`pb-4 ${className}`} {...props}>
     {children}

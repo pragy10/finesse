@@ -1,18 +1,15 @@
-// App constants
+
 export const APP_NAME = 'Finesse';
 export const APP_DESCRIPTION = 'AI-powered document analysis and reasoning platform';
 
-// API endpoints
 export const API_BASE_URL = process.env.NODE_ENV === 'production' 
   ? 'https://your-api-domain.com' 
   : 'http://localhost:3001';
 
-// File upload constants
 export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 export const MAX_FILES = 10;
 export const SUPPORTED_FILE_TYPES = ['.pdf', '.docx', '.jpg', '.jpeg', '.png', '.eml'];
 
-// Features data
 export const FEATURES = [
   {
     icon: 'FileText',
@@ -52,7 +49,6 @@ export const FEATURES = [
   }
 ];
 
-// Stats data
 export const STATS = [
   { number: "10K+", label: "Documents Processed", description: "Successfully analyzed and processed" },
   { number: "99.9%", label: "Accuracy Rate", description: "Precision in document analysis" },
@@ -60,7 +56,6 @@ export const STATS = [
   { number: "100%", label: "Secure Processing", description: "Enterprise-grade security" }
 ];
 
-// How it works steps
 export const HOW_IT_WORKS_STEPS = [
   {
     icon: 'Upload',
@@ -82,7 +77,6 @@ export const HOW_IT_WORKS_STEPS = [
   }
 ];
 
-// Quick questions for AI assistant
 export const QUICK_QUESTIONS = {
   general: [
     "What are the key points in my documents?",
@@ -104,7 +98,6 @@ export const QUICK_QUESTIONS = {
   ]
 };
 
-// Utility functions
 export const formatFileSize = (bytes) => {
   if (bytes === 0) return '0 Bytes';
   const k = 1024;
