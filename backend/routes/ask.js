@@ -11,7 +11,7 @@ const {
   analyzeClaimEligibility
 } = require("../llm/reasoningEngine");
 
-// Your existing /ask endpoint
+
 router.post("/ask", async (req, res) => {
   try {
     const { query, fileName, analysisType = 'DOCUMENT_ANALYSIS' } = req.body;
@@ -77,7 +77,7 @@ router.post("/ask", async (req, res) => {
   }
 });
 
-// Enhanced smart endpoint
+
 router.post("/ask-smart", async (req, res) => {
   try {
     const { query, fileName, returnStructured = false } = req.body;
@@ -88,10 +88,10 @@ router.post("/ask-smart", async (req, res) => {
 
     console.log(`[>] Smart AI Query: "${query}"`);
     
-    // Parse query
+    
     const parsedQuery = await parseAndEnhanceQuery(query);
     
-    // Perform search
+   
     const vector = await getEmbedding(query);
     
     const searchParams = {
@@ -113,7 +113,6 @@ router.post("/ask-smart", async (req, res) => {
     console.log(`[>] Found ${searchResults.length} relevant chunks`);
 
     if (returnStructured) {
-      // Return structured decision
       const structuredDecision = await generateStructuredDecision(query, searchResults, parsedQuery);
       const confidence = calculateConfidence(searchResults, JSON.stringify(structuredDecision));
       
@@ -131,7 +130,6 @@ router.post("/ask-smart", async (req, res) => {
         }
       });
     } else {
-      // Return conversational response
       const llmResult = await generateReasonedResponse(query, searchResults, 'CLAIM_ANALYSIS');
       const confidence = calculateConfidence(searchResults, llmResult.response);
       

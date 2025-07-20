@@ -2,10 +2,8 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { createAnalysisPrompt } = require('./promptTemplates');
 const { calculateConfidence } = require('./confidenceScoring');
 
-// Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
 
-// Main reasoning function (existing)
 async function generateReasonedResponse(userQuery, searchResults, analysisType = 'DOCUMENT_ANALYSIS') {
   try {
     if (!searchResults || searchResults.length === 0) {
@@ -20,10 +18,8 @@ async function generateReasonedResponse(userQuery, searchResults, analysisType =
 
     const prompt = createAnalysisPrompt(userQuery, searchResults, analysisType);
     
-    // Combine system and user prompts for Gemini
     const fullPrompt = `${prompt.system}\n\n${prompt.user}`;
 
-    // Get Gemini model
     const model = genAI.getGenerativeModel({ 
       model: "gemini-1.5-flash",
       generationConfig: {
@@ -55,12 +51,10 @@ async function generateReasonedResponse(userQuery, searchResults, analysisType =
   }
 }
 
-// Smart query parser
 async function parseAndEnhanceQuery(rawQuery) {
   try {
     console.log(`[>] Parsing query: "${rawQuery}"`);
     
-    // Basic extraction using regex patterns
     const parsed = {
       demographics: {},
       policy: {},
@@ -70,26 +64,22 @@ async function parseAndEnhanceQuery(rawQuery) {
       missing: []
     };
 
-    // Extract age and gender
     const ageGenderMatch = rawQuery.match(/(\d{1,2})[MF]/i);
     if (ageGenderMatch) {
       parsed.demographics.age = ageGenderMatch[1];
       parsed.demographics.gender = ageGenderMatch[0].slice(-1).toUpperCase();
     }
 
-    // Extract location
     const locationMatch = rawQuery.match(/\b(mumbai|delhi|bangalore|pune|chennai|kolkata|hyderabad|ahmedabad)\b/i);
     if (locationMatch) {
       parsed.demographics.location = locationMatch[1];
     }
 
-    // Extract policy duration
     const policyMatch = rawQuery.match(/(\d+)[- ]?month/i);
     if (policyMatch) {
       parsed.policy.duration = `${policyMatch[1]} months`;
     }
 
-    // Extract medical condition/procedure
     const medicalTerms = [
       'surgery', 'treatment', 'maternity', 'diabetes', 'heart', 'knee', 'cancer',
       'accident', 'emergency', 'consultation', 'therapy', 'operation'
@@ -103,7 +93,6 @@ async function parseAndEnhanceQuery(rawQuery) {
       }
     }
 
-    // Generate search terms
     parsed.searchTerms = [
       parsed.medical.condition,
       'eligibility',
@@ -112,7 +101,6 @@ async function parseAndEnhanceQuery(rawQuery) {
       parsed.demographics.location && `${parsed.demographics.location} network`
     ].filter(Boolean);
 
-    // Identify missing information
     if (!parsed.demographics.age) parsed.missing.push('age');
     if (!parsed.medical.condition) parsed.missing.push('medical condition');
     if (!parsed.policy.duration) parsed.missing.push('policy duration');
@@ -126,14 +114,10 @@ async function parseAndEnhanceQuery(rawQuery) {
   }
 }
 
-// Enhanced search function
 async function performEnhancedSearch(parsedQuery, searchResults) {
-  // For now, just return the original search results
-  // In a more advanced implementation, you could perform additional searches
   return searchResults;
 }
 
-// Generate structured decision
 async function generateStructuredDecision(userQuery, searchResults, parsedQuery) {
   try {
     console.log(`[>] Generating structured decision for: "${userQuery}"`);
@@ -191,7 +175,6 @@ NEXT STEPS:
     const result = await model.generateContent(prompt);
     const response = result.response.text();
 
-    // Parse the response into structured format
     const decision = {
       decision: {
         status: extractField(response, 'DECISION') || 'INSUFFICIENT_INFO',
@@ -234,14 +217,12 @@ NEXT STEPS:
   }
 }
 
-// Helper function to extract fields from response text
 function extractField(text, fieldName) {
   const regex = new RegExp(`${fieldName}:?\\s*(.+?)(?:\\n|$)`, 'i');
   const match = text.match(regex);
   return match ? match[1].trim() : null;
 }
 
-// Document summarization
 async function summarizeDocuments(documents) {
   try {
     const model = genAI.getGenerativeModel({ 
@@ -284,7 +265,6 @@ Provide a clear, structured summary:`;
   }
 }
 
-// Claim eligibility analysis
 async function analyzeClaimEligibility(userQuery, searchResults, userProfile = {}) {
   try {
     const model = genAI.getGenerativeModel({ 

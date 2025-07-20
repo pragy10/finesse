@@ -11,7 +11,6 @@ const app = express();
 app.use(cors({ origin: "http://localhost:5173" }));
 app.use(express.json());
 
-// Track uploaded documents in memory
 let uploadedDocuments = [];
 
 const storage = multer.diskStorage({
@@ -24,7 +23,6 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 }
 });
 
-// Unified upload endpoint
 app.post("/upload", upload.array("files", 10), async (req, res) => {
   try {
     const files = req.files || [];
@@ -52,7 +50,7 @@ app.post("/upload", upload.array("files", 10), async (req, res) => {
           fileName: file.originalname,
           uploadTime: new Date(),
           chunkCount: chunks.length,
-          chunks // Store for potential summarization
+          chunks 
         });
 
         processedFiles.push({
@@ -89,7 +87,6 @@ app.post("/upload", upload.array("files", 10), async (req, res) => {
   }
 });
 
-// Get list of uploaded documents
 app.get("/documents", (req, res) => {
   res.json({
     documents: uploadedDocuments,
@@ -97,7 +94,6 @@ app.get("/documents", (req, res) => {
   });
 });
 
-// Clear all documents
 app.post("/clear-all", async (req, res) => {
   try {
     console.log("[>] Clearing all documents from vector DB...");
@@ -115,10 +111,8 @@ app.post("/clear-all", async (req, res) => {
   }
 });
 
-// Basic search endpoint
 app.use("/", require("./routes/query"));
 
-// AI-powered ask endpoint
 app.use("/", require("./routes/ask"));
 
 app.listen(3001, () => {

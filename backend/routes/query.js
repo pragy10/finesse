@@ -31,7 +31,6 @@ router.post("/search", async (req, res) => {
     const result = await qdrantClient.search("policy_documents", searchParams);
     console.log(`[>] Raw Qdrant response:`, result);
     
-    // Fix: Handle the response correctly
     const results = result.result || result || [];
     console.log(`[✓] Found ${results.length} matches`);
     
@@ -41,7 +40,7 @@ router.post("/search", async (req, res) => {
       });
     }
     
-    res.json(results); // Send the actual results array
+    res.json(results); 
   } catch (err) {
     console.error("[x] Search error:", err);
     res.status(500).json({ error: "Search failed", details: err.message });
