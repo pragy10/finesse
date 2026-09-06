@@ -5,3 +5,5 @@
 *.jpeg
 *.eml
 *.docx
+
+/node_modules

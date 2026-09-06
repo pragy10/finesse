@@ -3,6 +3,7 @@ const router = express.Router();
 const qdrantClient = require("../vector/qdrantClient");
 const getEmbedding = require("../vector/embed");
 const { GEMINI_MODEL } = require("../config/aiConfig");
+const { optionalAuth } = require("../middleware/auth");
 const { 
   generateReasonedResponse, 
   calculateConfidence,
@@ -12,16 +13,47 @@ const {
   analyzeClaimEligibility
 } = require("../llm/reasoningEngine");
 
+// Helper function to build Qdrant search filters
+function buildSearchFilter(userId, fileName, documentIds) {
+  const mustFilters = [];
 
-router.post("/ask", async (req, res) => {
+  if (userId) {
+    mustFilters.push({ key: 'userId', match: { value: userId } });
+  }
+
+  if (documentIds && Array.isArray(documentIds) && documentIds.length > 0) {
+    // If specific document IDs selected
+    if (documentIds.length === 1) {
+      mustFilters.push({ key: 'documentId', match: { value: documentIds[0] } });
+    } else {
+      mustFilters.push({
+        should: documentIds.map(id => ({ key: 'documentId', match: { value: id } }))
+      });
+    }
+  } else if (fileName) {
+    mustFilters.push({ key: 'fileName', match: { value: fileName } });
+  }
+
+  return mustFilters.length > 0 ? { must: mustFilters } : null;
+}
+
+router.post("/ask", optionalAuth, async (req, res) => {
   try {
-    const { query, fileName, analysisType = 'DOCUMENT_ANALYSIS', history = [] } = req.body;
+    const { 
+      query, 
+      fileName, 
+      documentIds, 
+      analysisType = 'DOCUMENT_ANALYSIS', 
+      history = [],
+      userProfile = null
+    } = req.body;
     
     if (!query || !query.trim()) {
       return res.status(400).json({ error: "Query is required" });
     }
 
-    console.log(`[>] AI Query: "${query}"`);
+    const userId = req.user?.uid;
+    console.log(`[>] AI Query: "${query}" (User: ${userId || 'guest'})`);
     
     const vector = await getEmbedding(query);
     
@@ -32,33 +64,42 @@ router.post("/ask", async (req, res) => {
       score_threshold: 0.1
     };
     
-    if (fileName) {
-      searchParams.filter = {
-        must: [{ key: 'fileName', match: { value: fileName } }]
-      };
+    const filter = buildSearchFilter(userId, fileName, documentIds);
+    if (filter) {
+      searchParams.filter = filter;
     }
 
-    const result = await qdrantClient.search("policy_documents", searchParams);
-    const searchResults = result.result || result || [];
+    let searchResults = [];
+    try {
+      const result = await qdrantClient.search("policy_documents", searchParams);
+      searchResults = result.result || result || [];
+    } catch (searchError) {
+      console.warn("[!] Qdrant user-filtered search fallback:", searchError.message);
+      // If filtered search returned nothing or error due to legacy un-tagged chunks, fallback without userId filter
+      delete searchParams.filter;
+      const fallbackResult = await qdrantClient.search("policy_documents", searchParams);
+      searchResults = fallbackResult.result || fallbackResult || [];
+    }
     
     console.log(`[>] Found ${searchResults.length} relevant chunks`);
 
     if (searchResults.length === 0) {
       return res.json({
         query,
-        response: "I couldn't find relevant information in your documents. Please make sure you've uploaded documents related to your question.",
+        response: "I couldn't find relevant information in your uploaded documents. Please make sure your documents are selected or upload new documents.",
         confidence: { score: 0, level: 'Very Low' },
         sourceChunks: [],
         hasContent: false
       });
     }
 
-    const llmResult = await generateReasonedResponse(query, searchResults, analysisType, history);
+    const llmResult = await generateReasonedResponse(query, searchResults, analysisType, history, userProfile);
     const confidence = calculateConfidence(searchResults, llmResult.response);
     
     res.json({
       query,
       response: llmResult.response,
+      followUpQuestions: llmResult.followUpQuestions || [],
       confidence,
       sourceChunks: searchResults,
       hasContent: llmResult.hasContent,
@@ -78,21 +119,26 @@ router.post("/ask", async (req, res) => {
   }
 });
 
-
-router.post("/ask-smart", async (req, res) => {
+router.post("/ask-smart", optionalAuth, async (req, res) => {
   try {
-    const { query, fileName, returnStructured = false, history = [] } = req.body;
+    const { 
+      query, 
+      fileName, 
+      documentIds,
+      returnStructured = false, 
+      history = [],
+      userProfile = null
+    } = req.body;
     
     if (!query || !query.trim()) {
       return res.status(400).json({ error: "Query is required" });
     }
 
-    console.log(`[>] Smart AI Query: "${query}"`);
+    const userId = req.user?.uid;
+    console.log(`[>] Smart AI Query: "${query}" (User: ${userId || 'guest'})`);
     
+    const parsedQuery = await parseAndEnhanceQuery(query, userProfile);
     
-    const parsedQuery = await parseAndEnhanceQuery(query);
-    
-   
     const vector = await getEmbedding(query);
     
     const searchParams = {
@@ -102,19 +148,26 @@ router.post("/ask-smart", async (req, res) => {
       score_threshold: 0.05
     };
     
-    if (fileName) {
-      searchParams.filter = {
-        must: [{ key: 'fileName', match: { value: fileName } }]
-      };
+    const filter = buildSearchFilter(userId, fileName, documentIds);
+    if (filter) {
+      searchParams.filter = filter;
     }
 
-    const result = await qdrantClient.search("policy_documents", searchParams);
-    let searchResults = result.result || result || [];
+    let searchResults = [];
+    try {
+      const result = await qdrantClient.search("policy_documents", searchParams);
+      searchResults = result.result || result || [];
+    } catch (searchError) {
+      console.warn("[!] Qdrant user-filtered smart search fallback:", searchError.message);
+      delete searchParams.filter;
+      const fallbackResult = await qdrantClient.search("policy_documents", searchParams);
+      searchResults = fallbackResult.result || fallbackResult || [];
+    }
     
     console.log(`[>] Found ${searchResults.length} relevant chunks`);
 
     if (returnStructured) {
-      const structuredDecision = await generateStructuredDecision(query, searchResults, parsedQuery, history);
+      const structuredDecision = await generateStructuredDecision(query, searchResults, parsedQuery, history, userProfile);
       const confidence = calculateConfidence(searchResults, JSON.stringify(structuredDecision));
       
       res.json({
@@ -131,13 +184,14 @@ router.post("/ask-smart", async (req, res) => {
         }
       });
     } else {
-      const llmResult = await generateReasonedResponse(query, searchResults, 'CLAIM_ANALYSIS', history);
+      const llmResult = await generateReasonedResponse(query, searchResults, 'CLAIM_ANALYSIS', history, userProfile);
       const confidence = calculateConfidence(searchResults, llmResult.response);
       
       res.json({
         query,
         parsedQuery,
         response: llmResult.response,
+        followUpQuestions: llmResult.followUpQuestions || [],
         confidence,
         sourceChunks: searchResults,
         hasContent: llmResult.hasContent,

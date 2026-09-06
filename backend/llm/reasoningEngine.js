@@ -5,11 +5,11 @@ const { GEMINI_MODEL } = require('../config/aiConfig');
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
 
-async function generateReasonedResponse(userQuery, searchResults, analysisType = 'DOCUMENT_ANALYSIS', conversationHistory = []) {
+async function generateReasonedResponse(userQuery, searchResults, analysisType = 'DOCUMENT_ANALYSIS', conversationHistory = [], userProfile = null) {
   try {
     if (!searchResults || searchResults.length === 0) {
       return {
-        response: "I don't have enough relevant information in the uploaded documents to answer your question. Please upload more relevant documents or try rephrasing your question.",
+        response: "I don't have enough relevant information in the uploaded documents to answer your question. Please upload more relevant documents or select active documents to query.",
         hasContent: false
       };
     }
@@ -17,7 +17,7 @@ async function generateReasonedResponse(userQuery, searchResults, analysisType =
     console.log(`[>] Generating Gemini response for: "${userQuery}"`);
     console.log(`[>] Using ${searchResults.length} document chunks for context`);
 
-    const prompt = createAnalysisPrompt(userQuery, searchResults, analysisType, conversationHistory);
+    const prompt = createAnalysisPrompt(userQuery, searchResults, analysisType, conversationHistory, userProfile);
     
     const fullPrompt = `${prompt.system}\n\n${prompt.user}`;
 
@@ -36,9 +36,12 @@ async function generateReasonedResponse(userQuery, searchResults, analysisType =
     
     console.log(`[✓] Gemini response generated (${response.length} characters)`);
 
+    const followUpQuestions = extractNumberedSection(response, 'CLARIFYING QUESTIONS');
+
     return {
       response,
       hasContent: true,
+      followUpQuestions,
       usage: {
         promptTokens: fullPrompt.length / 4,
         completionTokens: response.length / 4,
@@ -52,7 +55,7 @@ async function generateReasonedResponse(userQuery, searchResults, analysisType =
   }
 }
 
-async function parseAndEnhanceQuery(rawQuery) {
+async function parseAndEnhanceQuery(rawQuery, userProfile = null) {
   try {
     console.log(`[>] Parsing query: "${rawQuery}"`);
     
@@ -69,16 +72,23 @@ async function parseAndEnhanceQuery(rawQuery) {
     if (ageGenderMatch) {
       parsed.demographics.age = ageGenderMatch[1];
       parsed.demographics.gender = ageGenderMatch[0].slice(-1).toUpperCase();
+    } else if (userProfile) {
+      if (userProfile.age) parsed.demographics.age = String(userProfile.age);
+      if (userProfile.gender) parsed.demographics.gender = userProfile.gender;
     }
 
     const locationMatch = rawQuery.match(/\b(mumbai|delhi|bangalore|pune|chennai|kolkata|hyderabad|ahmedabad)\b/i);
     if (locationMatch) {
       parsed.demographics.location = locationMatch[1];
+    } else if (userProfile?.city) {
+      parsed.demographics.location = userProfile.city;
     }
 
     const policyMatch = rawQuery.match(/(\d+)[- ]?month/i);
     if (policyMatch) {
       parsed.policy.duration = `${policyMatch[1]} months`;
+    } else if (userProfile?.policyDuration) {
+      parsed.policy.duration = userProfile.policyDuration;
     }
 
     const medicalTerms = [
@@ -106,7 +116,7 @@ async function parseAndEnhanceQuery(rawQuery) {
     if (!parsed.medical.condition) parsed.missing.push('medical condition');
     if (!parsed.policy.duration) parsed.missing.push('policy duration');
 
-    console.log(`[✓] Query parsed:`, parsed);
+    console.log(`[✓] Query parsed (enriched with profile):`, parsed);
     return parsed;
 
   } catch (error) {
@@ -119,7 +129,7 @@ async function performEnhancedSearch(parsedQuery, searchResults) {
   return searchResults;
 }
 
-async function generateStructuredDecision(userQuery, searchResults, parsedQuery, conversationHistory = []) {
+async function generateStructuredDecision(userQuery, searchResults, parsedQuery, conversationHistory = [], userProfile = null) {
   try {
     console.log(`[>] Generating structured decision for: "${userQuery}"`);
 
@@ -137,6 +147,14 @@ Content: ${result.payload.text.substring(0, 500)}...
 Relevance: ${result.score?.toFixed(3)}`
     ).join('\n---\n');
 
+    let profileText = "";
+    if (userProfile && (userProfile.age || userProfile.city || userProfile.policyDuration || userProfile.preExistingConditions)) {
+      profileText = `USER PROFILE (Known facts — do not ask for these if already provided):
+- Age: ${userProfile.age || 'unknown'}, Gender: ${userProfile.gender || 'unknown'}, Location: ${userProfile.city || 'unknown'}
+- Policy: ${userProfile.policyNumber || 'unknown'}, Duration: ${userProfile.policyDuration || 'unknown'}
+- Pre-existing Conditions: ${userProfile.preExistingConditions || 'None reported'}\n\n`;
+    }
+
     let historyText = "";
     if (Array.isArray(conversationHistory) && conversationHistory.length > 0) {
       const formattedHistory = conversationHistory
@@ -150,7 +168,7 @@ Relevance: ${result.score?.toFixed(3)}`
 
     const prompt = `You are an expert insurance claim analyst. Analyze this query and provide a structured decision.
 
-${historyText}User Query: "${userQuery}"
+${profileText}${historyText}User Query: "${userQuery}"
 User Info: Age ${parsedQuery.demographics?.age || 'unknown'}, Gender ${parsedQuery.demographics?.gender || 'unknown'}, Location ${parsedQuery.demographics?.location || 'unknown'}
 Medical: ${parsedQuery.medical?.condition || 'unknown'} treatment (${parsedQuery.medical?.treatmentType || 'unknown'})
 Policy: ${parsedQuery.policy?.duration || 'unknown'} duration
@@ -271,17 +289,56 @@ function extractField(text, fieldName) {
 }
 
 function extractListSection(text, sectionName) {
-  const regex = new RegExp(`(?:#{1,6}\\s*)?(?:\\*\\*)?${sectionName}(?:\\*\\*)?:?\\s*\\n([\\s\\S]*?)(?=(?:\\n\\s*#{1,6}|\\n\\s*---|\\n\\s*\\*\\*[A-Z\\s]{3,}\\*\\*|$))`, 'i');
+  const regex = new RegExp(`(?:#{1,6}\\s*)?(?:\\*\\*)?${sectionName}(?:\\*\\*)?:?\\s*\\n([\\s\\S]*?)(?=(?:\\n\\s*#{1,6}|\\n\\s*---|\\n\\s*\\*\\*[A-Z\\s]{3,}\\*\\*|\\n\\s*[A-Z\\s]{3,}:|$))`, 'i');
   const match = text.match(regex);
   if (!match) return [];
   return match[1]
     .split('\n')
     .map(line => line.replace(/^[#*•\d.\-\s]+/, '').replace(/\*\*/g, '').trim())
-    .filter(line => line.length > 0 && !line.toLowerCase().includes('none'));
+    .filter(line => {
+      if (line.length === 0 || line.toLowerCase().includes('none')) return false;
+      if (line.endsWith(':')) return false;
+      return true;
+    });
 }
 
 function extractNumberedSection(text, sectionName) {
-  return extractListSection(text, sectionName);
+  const regex = new RegExp(`(?:#{1,6}\\s*)?(?:\\*\\*)?${sectionName}(?:\\*\\*)?:?\\s*\\n([\\s\\S]*?)(?=(?:\\n\\s*#{1,6}|\\n\\s*---|\\n\\s*\\*\\*[A-Z\\s]{3,}\\*\\*|\\n\\s*(?:REASONING|REQUIREMENTS|NEXT STEPS|DOCUMENTATION|ACTION ITEMS|COVERAGE):|$))`, 'i');
+  const match = text.match(regex);
+  if (!match) return [];
+
+  const rawLines = match[1].split('\n');
+  const questions = [];
+
+  for (const rawLine of rawLines) {
+    const trimmed = rawLine.trim();
+    if (!trimmed) continue;
+
+    // Must be a numbered list item like "1. ...", "2) ..."
+    const numberMatch = trimmed.match(/^\d+[\.\)]\s+(.+)$/);
+    if (numberMatch) {
+      const cleanText = numberMatch[1].replace(/^\*\*|\*\*$/g, '').trim();
+
+      // Reject non-questions, headers, or lines ending with colon
+      if (
+        cleanText.toLowerCase() === 'none' ||
+        cleanText.endsWith(':') ||
+        /^(reasoning|requirements|next steps|documentation|action items|coverage details)/i.test(cleanText)
+      ) {
+        continue;
+      }
+
+      // Must be a question (ends with '?' or starts with interrogative phrasing)
+      if (
+        cleanText.endsWith('?') ||
+        /^(what|when|where|which|who|why|how|is|are|was|were|do|does|did|can|could|would|should|please\s+clarify|please\s+specify|did\s+you|are\s+you)/i.test(cleanText)
+      ) {
+        questions.push(cleanText.endsWith('?') ? cleanText : `${cleanText}?`);
+      }
+    }
+  }
+
+  return questions.slice(0, 3);
 }
 
 async function summarizeDocuments(documents) {

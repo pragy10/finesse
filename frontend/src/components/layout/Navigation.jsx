@@ -33,6 +33,18 @@ function Navigation({ variant = 'header' }) {
       description: 'Upload and analyze documents'
     },
     { 
+      path: '/documents', 
+      label: 'Documents', 
+      icon: FileText,
+      description: 'Manage persistent cloud documents'
+    },
+    { 
+      path: '/profile', 
+      label: 'Profile', 
+      icon: Users,
+      description: 'Insurance & personal details'
+    },
+    { 
       path: '/about', 
       label: 'About', 
       icon: Info,

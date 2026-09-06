@@ -12,7 +12,7 @@ function StatsSection() {
   };
 
   return (
-    <section className="py-16 bg-gray-100">
+    <section className="py-16 bg-gray-100 dark:bg-gray-950 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div 
           initial={{ opacity: 0, y: 30 }}
@@ -21,10 +21,10 @@ function StatsSection() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
             Trusted by Professionals Worldwide
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
             Numbers that speak for our commitment to excellence and reliability
           </p>
         </motion.div>
@@ -40,7 +40,7 @@ function StatsSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="bg-white rounded-xl p-6 text-center shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200"
+                className="bg-white dark:bg-gray-800 rounded-xl p-6 text-center shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200"
               >
                 <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center mx-auto mb-4">
                   <Icon className="w-6 h-6 text-white" />
@@ -51,13 +51,13 @@ function StatsSection() {
                   whileInView={{ scale: 1 }}
                   transition={{ duration: 0.5, delay: index * 0.1 + 0.3 }}
                   viewport={{ once: true }}
-                  className="text-3xl md:text-4xl font-bold text-primary-600 mb-2"
+                  className="text-3xl md:text-4xl font-bold text-primary-600 dark:text-primary-400 mb-2"
                 >
                   {stat.number}
                 </motion.div>
                 
-                <div className="font-semibold text-gray-900 mb-1">{stat.label}</div>
-                <div className="text-sm text-gray-600">{stat.description}</div>
+                <div className="font-semibold text-gray-900 dark:text-white mb-1">{stat.label}</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">{stat.description}</div>
               </motion.div>
             );
           })}

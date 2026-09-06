@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 import { useDocuments } from "../../context/DocumentContext";
-import { Upload, File, CheckCircle, Trash2, X, Plus } from 'lucide-react';
+import { useAuth } from "../../context/AuthContext";
+import { Upload, File, CheckCircle, Trash2, X, Plus, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
@@ -13,7 +15,8 @@ function FileUpload() {
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   
-  const { documents, fetchDocuments, clearDocuments } = useDocuments();
+  const { documents, fetchDocuments, clearAllDocuments, deleteDocument } = useDocuments();
+  const { idToken } = useAuth();
 
   const handleFileChange = (e) => {
     setFiles(e.target.files);
@@ -44,7 +47,7 @@ function FileUpload() {
     }
 
     setUploading(true);
-    setMessage("📤 Uploading and processing documents...");
+    setMessage("📤 Uploading and processing documents to Supabase Storage...");
     
     try {
       const formData = new FormData();
@@ -52,12 +55,15 @@ function FileUpload() {
         formData.append("files", file);
       });
 
-      const res = await axios.post("http://localhost:3001/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" }
+      const res = await axios.post("http://localhost:3001/documents/upload", formData, {
+        headers: { 
+          "Content-Type": "multipart/form-data",
+          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {})
+        }
       });
       
-      const successCount = res.data.processedFiles.filter(f => f.status === 'success').length;
-      setMessage(`✅ Successfully processed ${successCount}/${files.length} documents (${res.data.totalChunks} total chunks)`);
+      const successCount = res.data.processedFiles?.filter(f => f.status === 'success').length || 0;
+      setMessage(`✅ Stored ${successCount}/${files.length} document(s) in Supabase & indexed vectors!`);
       
       await fetchDocuments();
       setFiles(null);
@@ -66,21 +72,20 @@ function FileUpload() {
       
     } catch (error) {
       console.error("Upload failed:", error);
-      setMessage("❌ Upload failed. Please try again.");
+      setMessage(`❌ Upload failed: ${error.response?.data?.error || error.message}`);
     } finally {
       setUploading(false);
     }
   };
 
-  const clearAllDocuments = async () => {
+  const handleClearAll = async () => {
     if (!window.confirm("Are you sure you want to clear ALL documents? This cannot be undone.")) {
       return;
     }
     
     try {
       setMessage("🗑️ Clearing all documents...");
-      await axios.post("http://localhost:3001/clear-all");
-      clearDocuments();
+      await clearAllDocuments();
       setMessage("✅ All documents cleared successfully");
     } catch (error) {
       console.error("Clear failed:", error);
@@ -97,24 +102,32 @@ function FileUpload() {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6 bg-white dark:bg-gray-800 transition-colors">
       {/* Header */}
-      <div className="mb-8">
-        <h2 className="flex items-center gap-3 text-2xl font-bold text-gray-900 mb-2">
-          <Upload className="w-8 h-8 text-primary-500" />
-          Document Upload System
-        </h2>
-        <p className="text-gray-600 leading-relaxed">
-          Upload multiple documents and start your AI-powered analysis. Supports various formats with enterprise-grade security.
-        </p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h2 className="flex items-center gap-2.5 text-xl font-bold text-gray-900 dark:text-white">
+            <Upload className="w-6 h-6 text-primary-500" />
+            Upload Policy Documents
+          </h2>
+          <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+            Files are saved to your private cloud storage on Supabase and indexed into Qdrant for reasoning.
+          </p>
+        </div>
+        <Link 
+          to="/documents"
+          className="text-xs font-semibold text-primary-600 dark:text-primary-400 hover:underline flex items-center gap-1"
+        >
+          View Full Library ({documents.length}) →
+        </Link>
       </div>
 
       {/* File Drop Zone */}
       <div 
-        className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 cursor-pointer ${
+        className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200 cursor-pointer ${
           dragOver 
-            ? 'border-primary-400 bg-primary-50 scale-102' 
-            : 'border-gray-300 bg-gray-50 hover:border-primary-300 hover:bg-primary-25'
+            ? 'border-primary-400 bg-primary-50/50 dark:bg-primary-950/20 scale-[1.01]' 
+            : 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900/40 hover:border-primary-400'
         }`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -130,206 +143,148 @@ function FileUpload() {
           className="hidden"
         />
         
-        <motion.div
-          animate={dragOver ? { scale: 1.1 } : { scale: 1 }}
-          transition={{ type: "spring", stiffness: 300 }}
-        >
-          <Upload className={`w-16 h-16 mx-auto mb-4 ${dragOver ? 'text-primary-500' : 'text-gray-400'}`} />
-        </motion.div>
+        <Upload className={`w-12 h-12 mx-auto mb-3 ${dragOver ? 'text-primary-500' : 'text-gray-400 dark:text-gray-500'}`} />
         
-        <div className="space-y-2">
-          <h3 className="text-lg font-semibold text-gray-800">
-            {dragOver ? 'Drop files here!' : 'Drag & drop files here'}
+        <div className="space-y-1">
+          <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+            {dragOver ? 'Drop files here' : 'Drag & drop files here or browse'}
           </h3>
-          <p className="text-gray-500">or click to browse files</p>
-          
-          <div className="inline-flex items-center gap-2 bg-primary-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-600 transition-colors mt-4">
-            <Plus className="w-5 h-5" />
-            Choose Files
-          </div>
+          <p className="text-xs text-gray-500 dark:text-gray-400">PDF, DOCX, JPG, PNG up to 25MB</p>
         </div>
-        
-        <p className="text-sm text-gray-500 mt-6">
-          <span className="font-medium">Supported formats:</span> PDF, DOCX, JPG, PNG, EML
-          <br />
-          <span className="font-medium">Limits:</span> Max 10 files, 10MB each
-        </p>
       </div>
 
       {/* Selected Files Preview */}
       <AnimatePresence>
         {files && files.length > 0 && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="mt-8"
+            exit={{ opacity: 0, y: -15 }}
+            className="mt-6"
           >
-            <Card>
-              <Card.Header>
-                <div className="flex items-center justify-between">
-                  <h4 className="text-lg font-semibold text-gray-900">
-                    Selected Files ({files.length})
-                  </h4>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => setFiles(null)}
-                  >
-                    Clear All
-                  </Button>
-                </div>
-              </Card.Header>
+            <Card className="p-4 bg-gray-50 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-xs font-semibold text-gray-900 dark:text-white">
+                  Selected Files ({files.length})
+                </h4>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setFiles(null)}
+                  className="text-xs text-gray-500 hover:text-gray-700"
+                >
+                  Clear
+                </Button>
+              </div>
               
-              <Card.Content>
-                <div className="space-y-3 mb-6">
-                  {Array.from(files).map((file, index) => (
-                    <motion.div 
-                      key={index}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
-                          <File className="w-5 h-5 text-primary-600" />
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900">{file.name}</div>
-                          <div className="text-sm text-gray-500">{formatFileSize(file.size)}</div>
-                        </div>
-                      </div>
-                      <button 
-                        onClick={() => removeFile(index)}
-                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </motion.div>
-                  ))}
-                </div>
-                
-                <div className="flex justify-center">
-                  <Button 
-                    onClick={handleUpload}
-                    loading={uploading}
-                    size="lg"
-                    className="min-w-48"
+              <div className="space-y-2 mb-4">
+                {Array.from(files).map((file, index) => (
+                  <div 
+                    key={index}
+                    className="flex items-center justify-between p-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs"
                   >
-                    {uploading ? "Processing..." : `Upload ${files.length} File${files.length > 1 ? 's' : ''}`}
-                  </Button>
-                </div>
-              </Card.Content>
+                    <div className="flex items-center gap-2.5 truncate">
+                      <File className="w-4 h-4 text-primary-500 flex-shrink-0" />
+                      <span className="font-medium text-gray-800 dark:text-gray-200 truncate">{file.name}</span>
+                      <span className="text-gray-400">({formatFileSize(file.size)})</span>
+                    </div>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); removeFile(index); }}
+                      className="p-1 text-gray-400 hover:text-red-500"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="flex justify-end">
+                <Button 
+                  onClick={handleUpload}
+                  loading={uploading}
+                  size="sm"
+                  className="bg-primary-600 hover:bg-primary-700 text-white font-medium"
+                >
+                  {uploading ? "Processing..." : `Upload & Save ${files.length} File${files.length > 1 ? 's' : ''}`}
+                </Button>
+              </div>
             </Card>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Status Message */}
-      <AnimatePresence>
-        {message && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="mt-6"
-          >
-            <Card className={`border-l-4 ${
-              message.includes("❌") 
-                ? "bg-red-50 border-l-red-400" 
-                : "bg-green-50 border-l-green-400"
-            }`}>
-              <Card.Content>
-                <div className={`font-medium ${
-                  message.includes("❌") ? "text-red-800" : "text-green-800"
-                }`}>
-                  {message}
-                </div>
-              </Card.Content>
-            </Card>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {message && (
+        <div className={`mt-4 p-3 rounded-lg text-xs font-medium ${
+          message.includes("❌") 
+            ? "bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800" 
+            : "bg-green-50 dark:bg-green-950/40 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-800"
+        }`}>
+          {message}
+        </div>
+      )}
 
-      {/* Document Library */}
-      <div className="mt-12">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h3 className="text-xl font-semibold text-gray-900">
-              📚 Document Library ({documents.length})
-            </h3>
-            <p className="text-gray-600 mt-1">All your uploaded and processed documents</p>
-          </div>
+      {/* Document Library Preview */}
+      <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+            📚 Active Documents ({documents.length})
+          </h3>
           {documents.length > 0 && (
-            <Button 
-              onClick={clearAllDocuments}
-              variant="outline"
-              size="sm"
-              className="text-red-600 border-red-300 hover:bg-red-50"
+            <button 
+              onClick={handleClearAll}
+              className="text-xs text-red-600 dark:text-red-400 hover:underline flex items-center gap-1"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="w-3 h-3" />
               Clear All
-            </Button>
+            </button>
           )}
         </div>
         
         {documents.length > 0 ? (
-          <div className="grid gap-4">
-            {documents.map((doc, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.1 }}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {documents.slice(0, 4).map((doc) => (
+              <div
+                key={doc.id}
+                className="p-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl flex items-center justify-between text-xs"
               >
-                <Card hover className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center">
-                        <File className="w-6 h-6 text-primary-600" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-gray-900 mb-1">{doc.fileName}</h4>
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
-                          <span>{doc.chunkCount} chunks</span>
-                          <span>•</span>
-                          <span>{new Date(doc.uploadTime).toLocaleDateString()}</span>
-                          <span>•</span>
-                          <span>{new Date(doc.uploadTime).toLocaleTimeString()}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                        <CheckCircle className="w-5 h-5 text-green-600" />
-                      </div>
-                      <span className="text-sm text-green-600 font-medium">Processed</span>
-                    </div>
+                <div className="flex items-center gap-2.5 truncate">
+                  <div className="w-8 h-8 bg-primary-100 dark:bg-primary-950/60 text-primary-600 dark:text-primary-400 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <File className="w-4 h-4" />
                   </div>
-                </Card>
-              </motion.div>
+                  <div className="truncate">
+                    <div className="font-semibold text-gray-800 dark:text-gray-200 truncate">{doc.fileName}</div>
+                    <div className="text-[11px] text-gray-500 dark:text-gray-400">{doc.chunkCount || 0} chunks</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {doc.fileUrl && (
+                    <a
+                      href={doc.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-1 text-gray-400 hover:text-primary-500"
+                      title="View file in Supabase"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  )}
+                  <button
+                    onClick={() => deleteDocument(doc.id)}
+                    className="p-1 text-gray-400 hover:text-red-500"
+                    title="Delete document"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
             ))}
           </div>
         ) : (
-          <Card className="p-12 text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <File className="w-8 h-8 text-gray-400" />
-            </div>
-            <h4 className="text-lg font-semibold text-gray-700 mb-2">No documents uploaded yet</h4>
-            <p className="text-gray-500 mb-6 max-w-md mx-auto">
-                            Upload your first document to get started with AI-powered analysis. 
-              Experience the magic of intelligent document processing.
-            </p>
-            <Button 
-              onClick={() => document.getElementById('file-input').click()}
-              variant="outline"
-              size="lg"
-            >
-              <Upload className="w-5 h-5" />
-              Upload Your First Document
-            </Button>
-          </Card>
+          <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-4">
+            No documents uploaded yet.
+          </p>
         )}
       </div>
     </div>
@@ -337,4 +292,3 @@ function FileUpload() {
 }
 
 export default FileUpload;
-
