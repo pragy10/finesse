@@ -1,10 +1,11 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { createAnalysisPrompt } = require('./promptTemplates');
 const { calculateConfidence } = require('./confidenceScoring');
+const { GEMINI_MODEL } = require('../config/aiConfig');
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
 
-async function generateReasonedResponse(userQuery, searchResults, analysisType = 'DOCUMENT_ANALYSIS') {
+async function generateReasonedResponse(userQuery, searchResults, analysisType = 'DOCUMENT_ANALYSIS', conversationHistory = []) {
   try {
     if (!searchResults || searchResults.length === 0) {
       return {
@@ -16,17 +17,17 @@ async function generateReasonedResponse(userQuery, searchResults, analysisType =
     console.log(`[>] Generating Gemini response for: "${userQuery}"`);
     console.log(`[>] Using ${searchResults.length} document chunks for context`);
 
-    const prompt = createAnalysisPrompt(userQuery, searchResults, analysisType);
+    const prompt = createAnalysisPrompt(userQuery, searchResults, analysisType, conversationHistory);
     
     const fullPrompt = `${prompt.system}\n\n${prompt.user}`;
 
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
+      model: GEMINI_MODEL,
       generationConfig: {
         temperature: 0.1,
         topK: 40,
         topP: 0.95,
-        maxOutputTokens: 1200,
+        maxOutputTokens: 8192,
       }
     });
 
@@ -118,15 +119,15 @@ async function performEnhancedSearch(parsedQuery, searchResults) {
   return searchResults;
 }
 
-async function generateStructuredDecision(userQuery, searchResults, parsedQuery) {
+async function generateStructuredDecision(userQuery, searchResults, parsedQuery, conversationHistory = []) {
   try {
     console.log(`[>] Generating structured decision for: "${userQuery}"`);
 
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
+      model: GEMINI_MODEL,
       generationConfig: {
         temperature: 0.1,
-        maxOutputTokens: 1000,
+        maxOutputTokens: 8192,
       }
     });
 
@@ -136,26 +137,54 @@ Content: ${result.payload.text.substring(0, 500)}...
 Relevance: ${result.score?.toFixed(3)}`
     ).join('\n---\n');
 
-    const prompt = `You are an insurance claim analyst. Analyze this query and provide a structured decision.
+    let historyText = "";
+    if (Array.isArray(conversationHistory) && conversationHistory.length > 0) {
+      const formattedHistory = conversationHistory
+        .filter(msg => msg && msg.content && (msg.type === 'user' || msg.type === 'ai'))
+        .map(msg => `${msg.type === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
+        .join('\n');
+      if (formattedHistory) {
+        historyText = `PREVIOUS CONVERSATION HISTORY:\n${formattedHistory}\n\n`;
+      }
+    }
 
-Query: "${userQuery}"
+    const prompt = `You are an expert insurance claim analyst. Analyze this query and provide a structured decision.
+
+${historyText}User Query: "${userQuery}"
 User Info: Age ${parsedQuery.demographics?.age || 'unknown'}, Gender ${parsedQuery.demographics?.gender || 'unknown'}, Location ${parsedQuery.demographics?.location || 'unknown'}
-Medical: ${parsedQuery.medical?.condition || 'unknown'} treatment
+Medical: ${parsedQuery.medical?.condition || 'unknown'} treatment (${parsedQuery.medical?.treatmentType || 'unknown'})
 Policy: ${parsedQuery.policy?.duration || 'unknown'} duration
 
 Relevant Policy Documents:
 ${context}
 
-Provide analysis in this format:
+CRITICAL DECISION GUIDELINES:
+1. If the user query or available facts do not contain enough specifics to verify critical policy conditions (e.g. policy tenure/duration for waiting period check, specific hospital network status, or pre-existing disease history), DO NOT immediately reject or mark as dead-end unsupported.
+2. Instead, set DECISION to NEEDS_CLARIFICATION.
+3. When DECISION is NEEDS_CLARIFICATION:
+   - SUMMARY: State what the policy covers regarding this procedure and what condition is pending verification.
+   - MISSING INFORMATION: List what specific details are missing from the user.
+   - FOLLOW UP QUESTIONS: Provide 1 to 3 clear, concise questions for the user to answer in their next message.
+4. If the query and context provide sufficient facts, set DECISION to COVERED, NOT_COVERED, or PARTIALLY_COVERED.
 
-DECISION: [COVERED/NOT_COVERED/PARTIALLY_COVERED/INSUFFICIENT_INFO]
+Provide analysis strictly in this format:
+
+DECISION: [COVERED/NOT_COVERED/PARTIALLY_COVERED/NEEDS_CLARIFICATION]
 CONFIDENCE: [HIGH/MEDIUM/LOW]
 SUMMARY: [Brief 1-2 sentence summary]
 
 COVERAGE DETAILS:
-- Eligible: [Yes/No/Unknown]
-- Coverage Percentage: [0-100%]
-- Maximum Amount: [Amount or N/A]
+- Eligible: [Yes/No/Needs Clarification]
+- Coverage Percentage: [0-100% or Not specified]
+- Maximum Amount: [Amount or Not specified]
+
+MISSING INFORMATION:
+- [Item 1, or "None"]
+- [Item 2]
+
+FOLLOW UP QUESTIONS:
+1. [Question 1, or "None"]
+2. [Question 2]
 
 REASONING:
 - Primary factors affecting decision
@@ -175,11 +204,28 @@ NEXT STEPS:
     const result = await model.generateContent(prompt);
     const response = result.response.text();
 
+    const rawDecision = extractField(response, 'DECISION') || '';
+    let status = 'NEEDS_CLARIFICATION';
+    if (/COVERED/i.test(rawDecision)) {
+      if (/PARTIALLY/i.test(rawDecision)) status = 'PARTIALLY_COVERED';
+      else if (/NOT/i.test(rawDecision)) status = 'NOT_COVERED';
+      else status = 'COVERED';
+    } else if (/NOT_COVERED/i.test(rawDecision)) {
+      status = 'NOT_COVERED';
+    } else if (/NEEDS_CLARIFICATION/i.test(rawDecision) || /INSUFFICIENT/i.test(rawDecision)) {
+      status = 'NEEDS_CLARIFICATION';
+    }
+
+    const missingInfoRaw = extractListSection(response, 'MISSING INFORMATION');
+    const followUpQuestions = extractNumberedSection(response, 'FOLLOW UP QUESTIONS');
+
     const decision = {
       decision: {
-        status: extractField(response, 'DECISION') || 'INSUFFICIENT_INFO',
-        confidence: extractField(response, 'CONFIDENCE') || 'LOW',
-        summary: extractField(response, 'SUMMARY') || response.substring(0, 200)
+        status,
+        confidence: extractField(response, 'CONFIDENCE') || 'MEDIUM',
+        summary: extractField(response, 'SUMMARY') || response.substring(0, 200),
+        missingInfo: missingInfoRaw.length > 0 ? missingInfoRaw : (parsedQuery.missing || []),
+        followUpQuestions: followUpQuestions
       },
       coverage: {
         eligible: extractField(response, 'Eligible')?.toLowerCase().includes('yes') || false,
@@ -196,40 +242,55 @@ NEXT STEPS:
         networkHospital: response.toLowerCase().includes('network hospital required: yes')
       },
       nextActions: {
-        immediate: ['Contact insurance provider', 'Gather required documents'],
+        immediate: followUpQuestions.length > 0 ? followUpQuestions : ['Contact insurance provider', 'Gather required documents'],
         beforeTreatment: ['Get pre-authorization if required'],
         forClaim: ['Submit claim with all documents']
       }
     };
 
-    console.log(`[✓] Structured decision generated`);
+    console.log(`[✓] Structured decision generated (${status})`);
     return decision;
 
   } catch (error) {
     console.error('[x] Structured decision error:', error);
     return {
       decision: {
-        status: 'INSUFFICIENT_INFO',
+        status: 'ERROR',
         confidence: 'LOW',
-        summary: 'Unable to analyze due to processing error'
-      }
+        summary: `Unable to complete analysis: ${error.message || 'Processing error'}`
+      },
+      error: error.message
     };
   }
 }
 
 function extractField(text, fieldName) {
-  const regex = new RegExp(`${fieldName}:?\\s*(.+?)(?:\\n|$)`, 'i');
+  const regex = new RegExp(`(?:#{1,6}\\s*)?(?:\\*\\*)?${fieldName}(?:\\*\\*)?:?\\s*\\n?\\*?\\*?([^\n*#]+)`, 'i');
   const match = text.match(regex);
-  return match ? match[1].trim() : null;
+  return match ? match[1].replace(/^\*\*|\*\*$/g, '').trim() : null;
+}
+
+function extractListSection(text, sectionName) {
+  const regex = new RegExp(`(?:#{1,6}\\s*)?(?:\\*\\*)?${sectionName}(?:\\*\\*)?:?\\s*\\n([\\s\\S]*?)(?=(?:\\n\\s*#{1,6}|\\n\\s*---|\\n\\s*\\*\\*[A-Z\\s]{3,}\\*\\*|$))`, 'i');
+  const match = text.match(regex);
+  if (!match) return [];
+  return match[1]
+    .split('\n')
+    .map(line => line.replace(/^[#*•\d.\-\s]+/, '').replace(/\*\*/g, '').trim())
+    .filter(line => line.length > 0 && !line.toLowerCase().includes('none'));
+}
+
+function extractNumberedSection(text, sectionName) {
+  return extractListSection(text, sectionName);
 }
 
 async function summarizeDocuments(documents) {
   try {
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
+      model: GEMINI_MODEL,
       generationConfig: {
         temperature: 0.2,
-        maxOutputTokens: 500,
+        maxOutputTokens: 8192,
       }
     });
 
@@ -268,10 +329,10 @@ Provide a clear, structured summary:`;
 async function analyzeClaimEligibility(userQuery, searchResults, userProfile = {}) {
   try {
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
+      model: GEMINI_MODEL,
       generationConfig: {
         temperature: 0.1,
-        maxOutputTokens: 1200,
+        maxOutputTokens: 8192,
       }
     });
 
@@ -292,7 +353,7 @@ Policy Documents:
 ${context}
 
 Provide comprehensive analysis with:
-1. ELIGIBILITY STATUS (Eligible/Not Eligible/Insufficient Info)
+1. ELIGIBILITY STATUS (Eligible/Not Eligible/Needs Clarification)
 2. DETAILED REASONING with policy citations
 3. REQUIREMENTS and documents needed
 4. LIMITATIONS and restrictions

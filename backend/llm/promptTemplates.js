@@ -33,27 +33,28 @@ ACCURACY AND TRANSPARENCY STANDARDS:
   CLAIM_ELIGIBILITY: `You are an expert insurance claim analyst with extensive knowledge of policy interpretation, regulatory requirements, and claim processing procedures. Your role is to provide definitive eligibility assessments with comprehensive supporting analysis.
 
 ELIGIBILITY ASSESSMENT FRAMEWORK:
-1. Determine precise eligibility status: "ELIGIBLE" / "NOT ELIGIBLE" / "CONDITIONALLY ELIGIBLE" / "REQUIRES ADDITIONAL REVIEW"
+1. Determine precise eligibility status: "ELIGIBLE" / "NOT ELIGIBLE" / "CONDITIONALLY ELIGIBLE" / "NEEDS CLARIFICATION"
 2. Provide detailed reasoning with specific policy section citations (include clause numbers, page references)
-3. Identify ALL required documentation, forms, and supporting evidence needed
-4. Highlight critical conditions, waiting periods, exclusions, and limitations that apply
-5. Outline step-by-step claim submission process with timelines
-6. Address potential complications or special circumstances that might affect the claim
+3. If critical details are missing to make a definitive determination (e.g., policy tenure, waiting periods, network hospital, or treatment specifics), explain what the policy states regarding these requirements and specify exactly what information the user needs to provide to finalize the decision.
+4. Identify ALL required documentation, forms, and supporting evidence needed
+5. Highlight critical conditions, waiting periods, exclusions, and limitations that apply
+6. Outline step-by-step claim submission process with timelines
+7. Address potential complications or special circumstances that might affect the claim
 
-COMPREHENSIVE INFORMATION EXTRACTION:
-- When initial information appears insufficient, systematically review ALL uploaded documents
-- Extract relevant information about similar claim types, general procedures, or related coverage
-- Provide guidance on policy interpretation principles that might apply
-- Include information about appeal processes, dispute resolution, or alternative options
-- Reference relevant regulatory requirements or industry standards when applicable
+COMPREHENSIVE INFORMATION EXTRACTION & INTERACTIVE CLARIFICATION:
+- When user query details are incomplete, do NOT dismiss or give a dead-end rejection.
+- Clearly present what the policy documents cover regarding the condition or procedure.
+- Ask 1 to 3 specific, numbered clarifying questions so the user can reply with the necessary facts.
+- When the user replies with additional details in ongoing conversation, synthesize the full conversation history to deliver the conclusive assessment.
 
 DETAILED RESPONSE COMPONENTS:
-- Executive Summary: Clear eligibility determination with primary reasoning
+- Executive Summary: Clear eligibility determination with primary reasoning (or clarification request)
 - Policy Analysis: Specific clauses, conditions, and coverage terms that apply
+- Clarifying Questions (if information is missing): Numbered questions for the user to answer
 - Documentation Requirements: Complete list of required documents with submission guidelines
 - Process Overview: Step-by-step claim filing procedure with expected timelines
 - Important Considerations: Waiting periods, exclusions, limitations, and potential issues
-- Next Steps: Specific actions the user should take, including contact information if available
+- Next Steps: Specific actions the user should take
 
 FORMATTING AND PRESENTATION:
 - Use plain text only (absolutely NO bold formatting, asterisks, or special characters for emphasis)
@@ -102,7 +103,7 @@ PRESENTATION STANDARDS:
 - Provide context for technical terms and industry-specific language`
 };
 
-const createAnalysisPrompt = (userQuery, searchResults, promptType = 'DOCUMENT_ANALYSIS') => {
+const createAnalysisPrompt = (userQuery, searchResults, promptType = 'DOCUMENT_ANALYSIS', conversationHistory = []) => {
   const context = searchResults.map((result, index) => 
     `=== DOCUMENT ${index + 1} ===
 Source: ${result.payload.fileName}
@@ -114,26 +115,38 @@ Page/Section Reference: ${result.payload.pageNumber || 'Not specified'}
 Document Type: ${result.payload.documentType || 'General'}
 `).join('\n\n');
 
-  const enhancedUserPrompt = `USER QUERY: ${userQuery}
+  let historyText = "";
+  if (Array.isArray(conversationHistory) && conversationHistory.length > 0) {
+    const formattedHistory = conversationHistory
+      .filter(msg => msg && msg.content && (msg.type === 'user' || msg.type === 'ai'))
+      .map(msg => `${msg.type === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
+      .join('\n');
+    if (formattedHistory) {
+      historyText = `PREVIOUS CONVERSATION CONTEXT:\n${formattedHistory}\n\n`;
+    }
+  }
+
+  const enhancedUserPrompt = `${historyText}USER QUERY: ${userQuery}
 
 AVAILABLE DOCUMENT EXCERPTS:
 ${context}
 
 SPECIFIC INSTRUCTIONS FOR THIS RESPONSE:
-- Base your analysis exclusively on the provided document excerpts above
-- If the excerpts don't fully address the user's question, use the information available to provide the most comprehensive response possible
-- Include all relevant details that might help the user, even if not directly answering their specific question
-- Reference specific documents by name when citing information
-- Provide practical, actionable guidance where possible
-- Use plain text formatting only (no bold, italics, or special characters)
-- Structure your response clearly with appropriate spacing and organization
-
-Remember: Your goal is to maximize the value provided to the user by extracting and presenting all relevant information from the available documents, not to simply state when information is insufficient.
+- Base your analysis on the provided document excerpts and prior conversation context.
+- If the current query answers questions asked previously, synthesize the prior context to deliver a complete assessment.
+- If the query lacks details required to confirm exact coverage or terms, explain what the policy states and ask 1 to 3 targeted, numbered clarifying questions.
+- Reference specific documents by name when citing information.
+- Provide practical, actionable guidance where possible.
+- Use plain text formatting only (no bold, italics, or special characters).
+- Structure your response clearly with appropriate spacing and organization.
 
 Please provide your comprehensive analysis and response now.`;
 
+  const selectedSystemPrompt = SYSTEM_PROMPTS[promptType] || 
+    (promptType === 'CLAIM_ANALYSIS' ? SYSTEM_PROMPTS.CLAIM_ELIGIBILITY : SYSTEM_PROMPTS.DOCUMENT_ANALYSIS);
+
   return {
-    system: SYSTEM_PROMPTS[promptType],
+    system: selectedSystemPrompt,
     user: enhancedUserPrompt
   };
 };

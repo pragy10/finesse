@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const qdrantClient = require("../vector/qdrantClient");
 const getEmbedding = require("../vector/embed");
+const { GEMINI_MODEL } = require("../config/aiConfig");
 const { 
   generateReasonedResponse, 
   calculateConfidence,
@@ -14,7 +15,7 @@ const {
 
 router.post("/ask", async (req, res) => {
   try {
-    const { query, fileName, analysisType = 'DOCUMENT_ANALYSIS' } = req.body;
+    const { query, fileName, analysisType = 'DOCUMENT_ANALYSIS', history = [] } = req.body;
     
     if (!query || !query.trim()) {
       return res.status(400).json({ error: "Query is required" });
@@ -52,7 +53,7 @@ router.post("/ask", async (req, res) => {
       });
     }
 
-    const llmResult = await generateReasonedResponse(query, searchResults, analysisType);
+    const llmResult = await generateReasonedResponse(query, searchResults, analysisType, history);
     const confidence = calculateConfidence(searchResults, llmResult.response);
     
     res.json({
@@ -64,7 +65,7 @@ router.post("/ask", async (req, res) => {
       metadata: {
         chunkCount: searchResults.length,
         timestamp: new Date().toISOString(),
-        model: 'gemini-1.5-flash'
+        model: GEMINI_MODEL
       }
     });
 
@@ -80,7 +81,7 @@ router.post("/ask", async (req, res) => {
 
 router.post("/ask-smart", async (req, res) => {
   try {
-    const { query, fileName, returnStructured = false } = req.body;
+    const { query, fileName, returnStructured = false, history = [] } = req.body;
     
     if (!query || !query.trim()) {
       return res.status(400).json({ error: "Query is required" });
@@ -113,7 +114,7 @@ router.post("/ask-smart", async (req, res) => {
     console.log(`[>] Found ${searchResults.length} relevant chunks`);
 
     if (returnStructured) {
-      const structuredDecision = await generateStructuredDecision(query, searchResults, parsedQuery);
+      const structuredDecision = await generateStructuredDecision(query, searchResults, parsedQuery, history);
       const confidence = calculateConfidence(searchResults, JSON.stringify(structuredDecision));
       
       res.json({
@@ -125,12 +126,12 @@ router.post("/ask-smart", async (req, res) => {
         metadata: {
           chunkCount: searchResults.length,
           timestamp: new Date().toISOString(),
-          model: 'gemini-1.5-flash',
+          model: GEMINI_MODEL,
           processingType: 'structured'
         }
       });
     } else {
-      const llmResult = await generateReasonedResponse(query, searchResults, 'CLAIM_ANALYSIS');
+      const llmResult = await generateReasonedResponse(query, searchResults, 'CLAIM_ANALYSIS', history);
       const confidence = calculateConfidence(searchResults, llmResult.response);
       
       res.json({
@@ -143,7 +144,7 @@ router.post("/ask-smart", async (req, res) => {
         metadata: {
           chunkCount: searchResults.length,
           timestamp: new Date().toISOString(),
-          model: 'gemini-1.5-flash',
+          model: GEMINI_MODEL,
           processingType: 'conversational'
         }
       });

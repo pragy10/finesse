@@ -33,10 +33,16 @@ function AIAssistant() {
     try {
       const endpoint = smartMode ? '/ask-smart' : '/ask';
       
+      const history = conversation.slice(-10).map(msg => ({
+        type: msg.type,
+        content: msg.content
+      }));
+
       const res = await axios.post(`http://localhost:3001${endpoint}`, {
         query: currentQuery.trim(),
         fileName: selectedDoc || undefined,
-        returnStructured: false 
+        returnStructured: false,
+        history
       });
 
       const aiMessage = {
@@ -72,9 +78,15 @@ function AIAssistant() {
 
     setLoading(true);
     try {
+      const history = conversation.slice(-10).map(msg => ({
+        type: msg.type,
+        content: msg.content
+      }));
+
       const res = await axios.post("http://localhost:3001/ask-smart", {
         query: quickQuery.trim(),
-        returnStructured: true 
+        returnStructured: true,
+        history
       });
 
       const decision = res.data.decision;
@@ -104,28 +116,51 @@ function AIAssistant() {
   };
 
   const formatQuickDecision = (decision, parsed) => {
-    const status = decision.decision?.status || 'UNKNOWN';
-    const summary = decision.decision?.summary || 'Analysis completed';
-    
+    const status = decision?.decision?.status || 'UNKNOWN';
+    const summary = decision?.decision?.summary || 'Analysis completed';
+    const followUps = decision?.decision?.followUpQuestions || [];
+    const missing = decision?.decision?.missingInfo || [];
+
+    if (status === 'NEEDS_CLARIFICATION' || status === 'INSUFFICIENT_INFO') {
+      const questionsText = followUps.length > 0 
+        ? followUps.map((q, idx) => `${idx + 1}. ${q}`).join('\n')
+        : missing.length > 0
+        ? missing.map((m, idx) => `${idx + 1}. What is the ${m}?`).join('\n')
+        : '1. How long has your insurance policy been active?\n2. Are you seeking treatment at a network hospital?';
+
+      return `💬 **QUICK DECISION: DETAILS NEEDED TO CONFIRM**
+
+**Summary:** ${summary}
+
+**Questions to Complete Your Assessment:**
+${questionsText}
+
+**Next Step:**
+• Simply reply below with your answers and I will finalize your coverage determination!`;
+    }
+
+    if (status === 'ERROR') {
+      return `❌ **ANALYSIS ERROR**
+
+**Summary:** ${summary}
+
+**Next Steps:**
+• Please check your backend connection or try again.`;
+    }
+
     let statusEmoji = '❓';
-    let statusColor = 'gray';
-    
     switch (status) {
       case 'COVERED':
         statusEmoji = '✅';
-        statusColor = 'green';
         break;
       case 'NOT_COVERED':
         statusEmoji = '❌';
-        statusColor = 'red';
         break;
       case 'PARTIALLY_COVERED':
         statusEmoji = '⚠️';
-        statusColor = 'yellow';
         break;
       default:
-        statusEmoji = '❓';
-        statusColor = 'gray';
+        statusEmoji = 'ℹ️';
     }
 
     return `${statusEmoji} **QUICK DECISION: ${status.replace('_', ' ')}**
@@ -133,15 +168,15 @@ function AIAssistant() {
 **Summary:** ${summary}
 
 **Coverage Details:**
-• Eligibility: ${decision.coverage?.eligible ? 'Yes' : 'No'}
-• Coverage: ${decision.coverage?.coveragePercentage || 'Not specified'}%
-• Max Amount: ${decision.coverage?.maxAmount || 'Not specified'}
+• Eligibility: ${decision?.coverage?.eligible ? 'Yes' : 'No'}
+• Coverage: ${decision?.coverage?.coveragePercentage ?? 'Not specified'}%
+• Max Amount: ${decision?.coverage?.maxAmount || 'Not specified'}
 
 **Key Requirements:**
-${decision.requirements?.documentsNeeded?.map(doc => `• ${doc}`).join('\n') || '• Check policy terms'}
+${decision?.requirements?.documentsNeeded?.map(doc => `• ${doc}`).join('\n') || '• Check policy terms'}
 
 **Next Steps:**
-${decision.nextActions?.immediate?.map(action => `• ${action}`).join('\n') || '• Consult with insurance provider'}`;
+${decision?.nextActions?.immediate?.map(action => `• ${action}`).join('\n') || '• Consult with insurance provider'}`;
   };
 
   const clearConversation = () => {
@@ -287,7 +322,9 @@ ${decision.nextActions?.immediate?.map(action => `• ${action}`).join('\n') || 
                       : message.isError
                       ? 'bg-red-50 border border-red-200 text-red-800'
                       : message.isQuickDecision
-                      ? 'bg-gradient-to-r from-green-50 to-blue-50 border border-green-200'
+                      ? message.structuredData?.decision?.status === 'NEEDS_CLARIFICATION'
+                        ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200'
+                        : 'bg-gradient-to-r from-green-50 to-blue-50 border border-green-200'
                       : 'bg-white border border-gray-200 shadow-sm'
                   }`}>
                     <div className="whitespace-pre-wrap leading-relaxed">
