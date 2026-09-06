@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Brain, Target, Users, Award, Github, Linkedin, Mail, Globe } from 'lucide-react';
 import Card from '../components/ui/Card';
@@ -78,24 +79,27 @@ function AboutPage() {
           viewport={{ once: true }}
           className="mb-16"
         >
-          <Card className="p-8 md:p-12 bg-gradient-to-r from-primary-50 to-secondary-50 dark:from-gray-900 dark:to-gray-850 border-primary-200 dark:border-gray-700">
-            <div className="text-center">
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Our Mission</h2>
-              <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed max-w-4xl mx-auto mb-8">
+          <div className="bg-primary-900 dark:bg-primary-950 rounded-2xl p-8 md:p-12 text-center text-white shadow-xl relative overflow-hidden border border-primary-800/60">
+            {/* Amber glow */}
+            <div className="absolute top-0 right-0 w-72 h-72 bg-secondary-500/15 rounded-full blur-[90px] pointer-events-none" />
+            <div className="relative z-10">
+              <h2 className="font-serif text-3xl md:text-4xl text-white mb-3">Our Mission</h2>
+              <div className="w-12 h-1 bg-secondary-500 rounded-full mx-auto mb-6" />
+              <p className="text-base md:text-lg text-slate-200 leading-relaxed max-w-4xl mx-auto mb-8">
                 We believe that information should be instantly accessible and understandable. 
-                Our mission is to eliminate the friction between users and their documents by 
+                Our mission is to eliminate the friction between policyholders and their documents by 
                 providing intelligent, AI-powered analysis that delivers precise answers in seconds.
                 We're democratizing access to advanced document intelligence for everyone.
               </p>
-              <div className="flex flex-wrap justify-center gap-4">
-                {['🎯 Instant Information Access', '🔒 Privacy-First Approach', '🚀 Cutting-Edge Technology', '🌍 Global Accessibility'].map((highlight, i) => (
-                  <div key={i} className="bg-white dark:bg-gray-800 px-4 py-2 rounded-full text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm border border-gray-100 dark:border-gray-700">
+              <div className="flex flex-wrap justify-center gap-3">
+                {['Instant Information Access', 'Privacy-First Approach', 'Cutting-Edge AI Technology', 'Clear Policy Insights'].map((highlight, i) => (
+                  <div key={i} className="bg-white/10 hover:bg-white/15 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium text-white border border-white/20 transition-colors">
                     {highlight}
                   </div>
                 ))}
               </div>
             </div>
-          </Card>
+          </div>
         </motion.section>
 
         {/* Values Section */}
@@ -259,23 +263,27 @@ function AboutPage() {
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <Card className="p-8 md:p-12 text-center bg-gradient-to-r from-primary-600 to-secondary-600 text-white border-0 shadow-xl">
-            <h2 className="text-3xl font-bold mb-4">Ready to Transform Your Documents?</h2>
-            <p className="text-lg mb-8 opacity-90 max-w-2xl mx-auto">
-              Join thousands of professionals who trust {APP_NAME} for intelligent document analysis.
-              Start your journey today and experience the future of document intelligence.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
-                as="a" 
-                href="/dashboard" 
-                size="lg"
-                className="bg-white text-primary-600 hover:bg-gray-100 font-semibold"
-              >
-                Get Started Free
-              </Button>
+          <div className="bg-primary-900 dark:bg-primary-950 rounded-2xl p-8 md:p-12 text-center text-white shadow-xl relative overflow-hidden border border-primary-800/60">
+            {/* Amber glow */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-secondary-500/15 rounded-full blur-[80px] pointer-events-none" />
+            <div className="relative z-10">
+              <h2 className="font-serif text-3xl md:text-4xl text-white mb-4">Ready to Transform Your Documents?</h2>
+              <p className="text-base text-slate-300 mb-8 max-w-2xl mx-auto leading-relaxed">
+                Join thousands of professionals who trust {APP_NAME} for intelligent document analysis.
+                Start your journey today and experience the future of document intelligence.
+              </p>
+              <div className="flex justify-center">
+                <Button 
+                  as={Link} 
+                  to="/dashboard" 
+                  size="lg"
+                  className="bg-secondary-500 hover:bg-secondary-600 text-white font-semibold shadow-lg hover:shadow-xl rounded-lg"
+                >
+                  Get Started Free
+                </Button>
+              </div>
             </div>
-          </Card>
+          </div>
         </motion.section>
       </div>
     </div>

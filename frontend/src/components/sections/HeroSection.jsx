@@ -1,150 +1,152 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Upload, Brain, Zap, Play, CheckCircle } from 'lucide-react';
+import { ArrowRight, CheckCircle, FileText, ShieldCheck, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Button from '../ui/Button';
-import { STATS } from '../../utils/constants';
 
 function HeroSection() {
+  const trustBadges = [
+    'Policy clause lookup',
+    'Claim eligibility checks',
+    'Waiting period analysis',
+    'Plain language answers',
+  ];
+
+  const docLines = [
+    { label: 'Policy Holder', value: 'Pragya S.' },
+    { label: 'Sum Insured', value: '₹10,00,000' },
+    { label: 'Waiting Period', value: '2 years (specific illness)' },
+    { label: 'Day-Care Cover', value: 'Included' },
+  ];
+
   return (
-    <section className="relative bg-gradient-to-br from-primary-600 via-primary-700 to-secondary-600 text-white overflow-hidden">
-      {/* Background Elements */}
-      <div className="absolute inset-0">
-        <div className="absolute top-20 right-20 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-pulse-gentle"></div>
-        <div className="absolute bottom-20 left-20 w-72 h-72 bg-white/5 rounded-full blur-3xl animate-pulse-gentle"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-white/3 rounded-full blur-3xl"></div>
-      </div>
+    <section className="relative bg-primary-900 dark:bg-primary-950 overflow-hidden">
+      {/* Subtle grid background */}
+      <div
+        className="absolute inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage:
+            'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)',
+          backgroundSize: '40px 40px',
+        }}
+      />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Hero Content */}
+      {/* Warm amber glow — top right */}
+      <div className="absolute top-0 right-0 w-[480px] h-[480px] bg-secondary-500/10 rounded-full blur-[100px] pointer-events-none" />
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
+        <div className="grid lg:grid-cols-2 gap-14 items-center">
+
+          {/* Left — copy */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center lg:text-left"
+            transition={{ duration: 0.6 }}
+            className="pt-2 lg:pt-0"
           >
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="inline-flex items-center bg-white/15 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 mb-6"
-            >
-              <span className="text-sm font-medium">🚀 Now powered by Google Gemini AI</span>
-            </motion.div>
-
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
-              Transform Documents into
-              <span className="bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent block lg:inline">
-                {' '}Intelligent Insights
-              </span>
+            <h1 className="font-serif text-4xl sm:text-5xl lg:text-[3.5rem] leading-[1.12] text-white mb-6 tracking-tight">
+              Understand Your Policy —{' '}
+              <span className="text-secondary-400 block sm:inline">In Plain Language</span>
             </h1>
-            
-            <p className="text-lg md:text-xl text-white/90 mb-8 max-w-2xl leading-relaxed">
-              Upload any document and get AI-powered analysis, semantic search, and intelligent reasoning. 
-              Perfect for policy analysis, claim processing, and document understanding with enterprise-grade security.
+
+            <p className="text-slate-300 text-lg leading-relaxed mb-8 max-w-xl">
+              Upload your health, life, or motor insurance policy. Ask whether your
+              claim is covered. Get a clear answer with the exact clause cited — no
+              jargon, no guessing.
             </p>
 
-            <div className="flex flex-wrap gap-4 justify-center lg:justify-start mb-8">
-              {[
-                { icon: Upload, text: 'Multi-format Support' },
-                { icon: Brain, text: 'AI-Powered Analysis' },
-                { icon: Zap, text: 'Instant Results' }
-              ].map(({ icon: Icon, text }) => (
-                <div key={text} className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
-                  <Icon className="w-4 h-4" />
-                  <span className="text-sm font-medium">{text}</span>
-                </div>
+            {/* Trust badges */}
+            <ul className="grid grid-cols-2 gap-x-6 gap-y-2.5 mb-10">
+              {trustBadges.map((item) => (
+                <li key={item} className="flex items-center gap-2 text-sm text-slate-300">
+                  <CheckCircle className="w-4 h-4 text-secondary-400 flex-shrink-0" />
+                  {item}
+                </li>
               ))}
-            </div>
+            </ul>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-12">
+            <div className="flex flex-col sm:flex-row gap-3">
               <Button
                 as={Link}
                 to="/dashboard"
                 size="lg"
-                className="bg-white text-primary-600 hover:bg-gray-100 shadow-xl"
+                className="bg-secondary-500 hover:bg-secondary-600 text-white font-semibold shadow-lg hover:shadow-xl rounded-lg"
               >
-                Get Started Free
-                <ArrowRight className="w-5 h-5" />
+                Check Your Coverage
+                <ArrowRight className="w-4 h-4" />
               </Button>
-              
               <Button
+                as={Link}
+                to="/about"
                 size="lg"
-                className="bg-white/10 backdrop-blur-sm text-white border border-white/20 hover:bg-white/20"
+                className="bg-white/10 text-white border border-white/20 hover:bg-white/15 rounded-lg font-medium"
               >
-                <Play className="w-5 h-5" />
-                Watch Demo
+                Learn More
               </Button>
-            </div>
-
-            <div className="grid grid-cols-3 gap-8 max-w-md mx-auto lg:mx-0">
-              {STATS.slice(0, 3).map((stat, index) => (
-                <motion.div 
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.8 + index * 0.1 }}
-                  className="text-center"
-                >
-                  <div className="text-2xl md:text-3xl font-bold mb-1">{stat.number}</div>
-                  <div className="text-sm text-white/80">{stat.label}</div>
-                </motion.div>
-              ))}
             </div>
           </motion.div>
 
-          {/* Hero Visual */}
+          {/* Right — policy document mockup */}
           <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.15 }}
             className="flex justify-center lg:justify-end"
           >
-            <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-6 max-w-md w-full">
-              <div className="flex items-center gap-3 mb-4 pb-4 border-b border-white/20">
-                <div className="flex gap-1">
-                  <div className="w-3 h-3 bg-red-400 rounded-full"></div>
-                  <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
-                  <div className="w-3 h-3 bg-green-400 rounded-full"></div>
-                </div>
-                <span className="text-sm font-medium">🤖 AI Document Assistant</span>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="flex gap-3">
-                  <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center text-sm">👤</div>
-                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 flex-1">
-                    <div className="text-sm">"Am I eligible for knee surgery coverage as a 46M in Pune with 3-month policy?"</div>
+            <div className="w-full max-w-sm">
+              {/* Document card */}
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-700">
+                {/* Document header strip */}
+                <div className="bg-primary-800 px-5 py-3.5 flex items-center gap-3">
+                  <div className="w-8 h-8 bg-white/15 rounded-lg flex items-center justify-center">
+                    <FileText className="w-4 h-4 text-white" />
                   </div>
-                </div>
-                
-                <div className="flex gap-3">
-                  <div className="w-8 h-8 bg-secondary-500 rounded-full flex items-center justify-center text-sm">🤖</div>
-                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 flex-1">
-                    <div className="text-sm mb-2">
-                      "Yes, you are covered for knee surgery under your current policy. 
-                      Based on Section 4.2, orthopedic procedures are covered with 
-                      80% reimbursement after your $500 deductible..."
-                    </div>
-                    <div className="inline-flex items-center gap-1 bg-green-500/20 text-green-300 text-xs px-2 py-1 rounded">
-                      <CheckCircle className="w-3 h-3" />
-                      High Confidence (89%)
-                    </div>
+                  <div>
+                    <div className="text-white text-xs font-semibold">Health Insurance Policy</div>
+                    <div className="text-primary-300 text-[11px]">Individual — Policy Year 2024–25</div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 text-xs text-white/70">
-                  <div className="flex gap-1">
-                    <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                {/* Policy fields */}
+                <div className="px-5 pt-4 pb-2 space-y-3">
+                  {docLines.map(({ label, value }) => (
+                    <div key={label} className="flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2.5 last:border-0">
+                      <span className="text-xs text-slate-500 dark:text-slate-400">{label}</span>
+                      <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">{value}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* AI query strip */}
+                <div className="mx-5 mb-4 mt-1 bg-primary-50 dark:bg-primary-950/40 border border-primary-100 dark:border-primary-900 rounded-xl p-3.5">
+                  <p className="text-[11px] font-medium text-primary-700 dark:text-primary-300 mb-1">Query</p>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                    "Is knee replacement surgery covered after 3 months?"
+                  </p>
+                </div>
+
+                {/* AI answer */}
+                <div className="mx-5 mb-5 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900 rounded-xl p-3.5">
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <CheckCircle className="w-3.5 h-3.5 text-green-600" />
+                    <p className="text-[11px] font-semibold text-green-700 dark:text-green-400">Conditional Coverage</p>
                   </div>
-                  <span>AI is analyzing more documents...</span>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                    Covered after 2-year waiting period per{' '}
+                    <span className="font-semibold text-primary-700 dark:text-primary-400">Section 4.1(b)</span>.
+                    Current policy age: 3 months — waiting period not yet met.
+                  </p>
+                </div>
+
+                {/* Footer: response time */}
+                <div className="flex items-center gap-1.5 px-5 pb-4 text-[11px] text-slate-400">
+                  <Clock className="w-3 h-3" />
+                  Response in 2.4s
                 </div>
               </div>
             </div>
           </motion.div>
+
         </div>
       </div>
     </section>

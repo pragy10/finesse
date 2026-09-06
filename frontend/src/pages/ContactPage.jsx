@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail, MessageSquare, Send, MapPin, Clock, Github, Linkedin, Globe, CheckCircle } from 'lucide-react';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
-import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 function ContactPage() {
   const [formData, setFormData] = useState({
@@ -31,7 +31,7 @@ function ContactPage() {
       setIsSubmitting(false);
       setSubmitted(true);
       setFormData({ name: '', email: '', subject: '', message: '' });
-    }, 2000);
+    }, 1500);
   };
 
   const contactInfo = [
@@ -40,7 +40,7 @@ function ContactPage() {
       title: "Email",
       value: "pragya.skr10@gmail.com",
       link: "mailto:pragya.skr10@gmail.com",
-      description: "Send us an email anytime"
+      description: "Send an email anytime"
     },
     {
       icon: MapPin,
@@ -52,7 +52,7 @@ function ContactPage() {
       icon: Clock,
       title: "Response Time",
       value: "Usually within 24 hours",
-      description: "We'll get back to you quickly"
+      description: "Fast and direct replies"
     }
   ];
 
@@ -62,98 +62,95 @@ function ContactPage() {
       title: "GitHub",
       url: "https://github.com/pragy10",
       handle: "@pragy10",
-      description: "View source code and projects"
+      description: "Source code & projects"
     },
     {
       icon: Linkedin,
       title: "LinkedIn", 
       url: "https://linkedin.com/in/pragya-sekar",
       handle: "/in/pragya-sekar",
-      description: "Professional network and updates"
+      description: "Professional updates"
     },
     {
       icon: Globe,
       title: "Website",
       url: "https://pragyasekar.vercel.app",
       handle: "pragyasekar.vercel.app",
-      description: "Personal portfolio and blog"
+      description: "Portfolio & articles"
     }
   ];
 
   const faqs = [
     {
-      question: "How secure is my data?",
-      answer: "All documents are processed with enterprise-grade encryption. We don't store your documents permanently and follow strict privacy protocols including GDPR compliance."
+      question: "How secure is my policy data?",
+      answer: "All uploaded documents are processed securely in cloud storage with strict per-user access control. Your files remain confidential and are never shared."
     },
     {
-      question: "What file formats do you support?",
-      answer: "We support PDF, DOCX, JPG, PNG, and EML files. Our advanced OCR technology can extract text from images and scanned documents with 99% accuracy."
+      question: "What document formats are supported?",
+      answer: "We support PDF, DOCX, JPG, PNG, and EML files. The system automatically extracts clauses, tables, and policy wording."
     },
     {
-      question: "Is there an API available?",
-      answer: "Yes! We offer a comprehensive RESTful API for developers who want to integrate our document intelligence capabilities into their applications."
+      question: "How does the AI verify claim eligibility?",
+      answer: "Our engine indexes your policy into vector chunks, checks waiting periods, sub-limits, and exclusions, and provides direct clause citations."
     },
     {
-      question: "How accurate is the AI analysis?",
-      answer: "Our AI models achieve 99.9% accuracy in text extraction and semantic understanding, powered by Google Gemini and advanced NLP techniques with continuous learning."
-    },
-    {
-      question: "Can I process multiple documents?",
-      answer: "Absolutely! You can upload and analyze multiple documents simultaneously, with batch processing capabilities and cross-document search functionality."
-    },
-    {
-      question: "What's the pricing model?",
-      answer: "We offer flexible pricing including a generous free tier. Contact us to discuss enterprise plans and custom solutions for your specific needs."
+      question: "Can I delete my uploaded documents anytime?",
+      answer: "Yes! You have complete control. You can delete individual documents or clear all documents at any time from your Document Manager."
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <motion.section 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-16"
-        >
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">Get in Touch</h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Have questions about Finesse? Want to collaborate or provide feedback? 
-            I'd love to hear from you. Let's start a conversation and explore how AI can transform your document workflows.
-          </p>
-        </motion.section>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
+      {/* Page Header Banner */}
+      <div className="bg-primary-900 dark:bg-primary-950 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <div className="flex items-start gap-4">
+            <div className="p-2.5 bg-white/10 rounded-xl">
+              <Mail className="w-7 h-7 text-secondary-400" />
+            </div>
+            <div>
+              <h1 className="font-serif text-2xl md:text-3xl text-white mb-1">
+                Get in Touch
+              </h1>
+              <p className="text-primary-200 text-sm max-w-2xl">
+                Have questions about Finesse? Want to collaborate or share feedback? We'd love to hear from you.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
 
-        <div className="grid lg:grid-cols-3 gap-12 mb-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-5 relative z-10 pb-16">
+        <div className="grid lg:grid-cols-3 gap-8 mb-16">
           {/* Contact Form */}
           <motion.div 
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
             className="lg:col-span-2"
           >
-            <Card className="p-8">
+            <div className="p-8 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
               <div className="flex items-center gap-3 mb-8">
-                <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
-                  <MessageSquare className="w-6 h-6 text-primary-600" />
+                <div className="w-10 h-10 bg-primary-100 dark:bg-primary-950/60 rounded-xl flex items-center justify-center">
+                  <MessageSquare className="w-5 h-5 text-primary-700 dark:text-primary-300" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Send a Message</h2>
-                  <p className="text-gray-600">Fill out the form below and I'll get back to you soon</p>
+                  <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Send a Message</h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Fill out the form below and we'll reply promptly.</p>
                 </div>
               </div>
 
               {submitted ? (
                 <motion.div 
-                  initial={{ opacity: 0, scale: 0.9 }}
+                  initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   className="text-center py-12"
                 >
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <CheckCircle className="w-8 h-8 text-green-600" />
+                  <div className="w-14 h-14 bg-green-100 dark:bg-green-950/60 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle className="w-7 h-7 text-green-600 dark:text-green-400" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Message Sent Successfully!</h3>
-                  <p className="text-gray-600 mb-6">Thanks for reaching out. I'll get back to you within 24 hours.</p>
+                  <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">Message Sent Successfully!</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">Thanks for reaching out. We'll get back to you shortly.</p>
                   <Button 
                     onClick={() => setSubmitted(false)}
                     variant="outline"
@@ -162,10 +159,10 @@ function ContactPage() {
                   </Button>
                 </motion.div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-6">
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  <div className="grid md:grid-cols-2 gap-5">
                     <div>
-                      <label htmlFor="name" className="block text-sm font-semibold text-gray-900 mb-2">
+                      <label htmlFor="name" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                         Full Name *
                       </label>
                       <input
@@ -176,12 +173,12 @@ function ContactPage() {
                         onChange={handleChange}
                         required
                         placeholder="Your full name"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                        className="w-full px-3.5 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-primary-600 transition"
                       />
                     </div>
                     
                     <div>
-                      <label htmlFor="email" className="block text-sm font-semibold text-gray-900 mb-2">
+                      <label htmlFor="email" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                         Email Address *
                       </label>
                       <input
@@ -192,13 +189,13 @@ function ContactPage() {
                         onChange={handleChange}
                         required
                         placeholder="your.email@example.com"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                        className="w-full px-3.5 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-primary-600 transition"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label htmlFor="subject" className="block text-sm font-semibold text-gray-900 mb-2">
+                    <label htmlFor="subject" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                       Subject *
                     </label>
                     <input
@@ -208,13 +205,13 @@ function ContactPage() {
                       value={formData.subject}
                       onChange={handleChange}
                       required
-                      placeholder="What's this about?"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                      placeholder="What is this regarding?"
+                      className="w-full px-3.5 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-primary-600 transition"
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="message" className="block text-sm font-semibold text-gray-900 mb-2">
+                    <label htmlFor="message" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                       Message *
                     </label>
                     <textarea
@@ -223,9 +220,9 @@ function ContactPage() {
                       value={formData.message}
                       onChange={handleChange}
                       required
-                      rows={6}
-                      placeholder="Tell me more about your question or feedback..."
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors resize-none"
+                      rows={5}
+                      placeholder="Tell us more about your question or feedback..."
+                      className="w-full px-3.5 py-2.5 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-primary-600 transition resize-none"
                     />
                   </div>
 
@@ -233,132 +230,127 @@ function ContactPage() {
                     type="submit"
                     loading={isSubmitting}
                     size="lg"
-                    className="w-full"
+                    className="w-full bg-primary-700 hover:bg-primary-800 text-white font-medium"
                   >
-                    {isSubmitting ? 'Sending Message...' : 'Send Message'}
-                    <Send className="w-5 h-5" />
+                    {isSubmitting ? 'Sending...' : 'Send Message'}
+                    <Send className="w-4 h-4 ml-1" />
                   </Button>
                 </form>
               )}
-            </Card>
+            </div>
           </motion.div>
 
           {/* Contact Info Sidebar */}
           <motion.div 
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.15 }}
             className="space-y-6"
           >
             {/* Contact Details */}
-            <Card className="p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-6">Contact Information</h3>
+            <div className="p-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
+              <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-5">Contact Details</h3>
               
-              <div className="space-y-6">
+              <div className="space-y-5">
                 {contactInfo.map((info, index) => (
-                  <div key={index} className="flex gap-4">
-                    <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <info.icon className="w-6 h-6 text-primary-600" />
+                  <div key={index} className="flex items-start gap-3.5">
+                    <div className="w-10 h-10 bg-primary-100 dark:bg-primary-950/60 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <info.icon className="w-5 h-5 text-primary-700 dark:text-primary-300" />
                     </div>
-                    <div className="flex-1">
-                      <div className="font-semibold text-gray-900 mb-1">{info.title}</div>
+                    <div>
+                      <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-0.5">{info.title}</div>
                       {info.link ? (
-                        <a href={info.link} className="text-primary-600 hover:text-primary-700 font-medium mb-1 block">
+                        <a href={info.link} className="text-sm text-primary-700 dark:text-primary-400 hover:underline font-medium block">
                           {info.value}
                         </a>
                       ) : (
-                        <div className="text-gray-800 font-medium mb-1">{info.value}</div>
+                        <div className="text-sm text-slate-800 dark:text-slate-200 font-medium">{info.value}</div>
                       )}
-                      <div className="text-sm text-gray-600">{info.description}</div>
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{info.description}</div>
                     </div>
                   </div>
                 ))}
               </div>
-            </Card>
+            </div>
 
             {/* Social Links */}
-            <Card className="p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-6">Connect with Me</h3>
-              <div className="space-y-4">
+            <div className="p-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm">
+              <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-4">Connect</h3>
+              <div className="space-y-2">
                 {socialLinks.map((social, index) => (
                   <a
                     key={index}
                     href={social.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors group"
+                    className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors group"
                   >
-                    <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-primary-500 group-hover:text-white transition-colors">
-                      <social.icon className="w-5 h-5" />
+                    <div className="w-9 h-9 bg-slate-100 dark:bg-slate-700 rounded-lg flex items-center justify-center group-hover:bg-primary-700 group-hover:text-white transition-colors text-slate-600 dark:text-slate-300">
+                      <social.icon className="w-4 h-4" />
                     </div>
-                    <div className="flex-1">
-                      <div className="font-semibold text-gray-900 group-hover:text-primary-600">{social.title}</div>
-                      <div className="text-sm text-gray-600 mb-1">{social.handle}</div>
-                      <div className="text-xs text-gray-500">{social.description}</div>
+                    <div>
+                      <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 group-hover:text-primary-700 dark:group-hover:text-primary-400 transition-colors">
+                        {social.title}
+                      </div>
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400">{social.handle}</div>
                     </div>
                   </a>
                 ))}
               </div>
-            </Card>
+            </div>
 
             {/* Quick Actions */}
-            <Card className="p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-6">Quick Actions</h3>
-              <div className="space-y-3">
-                <Button 
-                  as="a" 
-                  href="/dashboard"
-                  variant="primary"
-                  size="md"
-                  className="w-full"
-                >
-                  Try Finesse Now
-                </Button>
-                
-                <Button
-                  as="a"
-                  href="https://github.com/pragy10/finesse"
-                  target="_blank"
-                  variant="outline"
-                  size="md"
-                  className="w-full"
-                >
-                  <Github className="w-4 h-4" />
-                  View on GitHub
-                </Button>
-              </div>
-            </Card>
+            <div className="p-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm space-y-3">
+              <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-2">Explore Finesse</h3>
+              <Button 
+                as={Link} 
+                to="/dashboard"
+                size="md"
+                className="w-full bg-secondary-500 hover:bg-secondary-600 text-white font-medium"
+              >
+                Go to Dashboard
+              </Button>
+              
+              <Button
+                as="a"
+                href="https://github.com/pragy10/finesse"
+                target="_blank"
+                variant="outline"
+                size="md"
+                className="w-full"
+              >
+                <Github className="w-4 h-4 mr-1.5" />
+                View on GitHub
+              </Button>
+            </div>
           </motion.div>
         </div>
 
         {/* FAQ Section */}
         <motion.section 
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.5 }}
           viewport={{ once: true }}
         >
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Common questions about Finesse and document intelligence. Can't find your answer? Feel free to reach out!
+          <div className="text-center mb-10">
+            <h2 className="font-serif text-2xl md:text-3xl text-slate-900 dark:text-white mb-2">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xl mx-auto">
+              Common questions about Finesse and document intelligence.
             </p>
           </div>
           
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-2 gap-6">
             {faqs.map((faq, index) => (
-              <motion.div
+              <div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
+                className="p-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm"
               >
-                <Card hover className="h-full">
-                  <h4 className="text-lg font-semibold text-gray-900 mb-3">{faq.question}</h4>
-                  <p className="text-gray-600 leading-relaxed">{faq.answer}</p>
-                </Card>
-              </motion.div>
+                <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">{faq.question}</h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{faq.answer}</p>
+              </div>
             ))}
           </div>
         </motion.section>

@@ -1,16 +1,20 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import LoadingSpinner from './LoadingSpinner';
 
 const Button = React.forwardRef(({ 
+  as,
+  to,
+  href,
   children, 
   variant = 'primary', 
   size = 'md', 
-  loading = false,
-  disabled = false,
-  icon: Icon,
-  className = '',
-  onClick,
+  loading = false, 
+  disabled = false, 
+  icon: Icon, 
+  className = '', 
+  onClick, 
   ...props 
 }, ref) => {
   const baseClasses = 'btn';
@@ -31,7 +35,48 @@ const Button = React.forwardRef(({
     variantClasses[variant],
     sizeClasses[size],
     className
-  ].join(' ');
+  ].filter(Boolean).join(' ');
+
+  const content = (
+    <>
+      {loading ? (
+        <LoadingSpinner size="sm" />
+      ) : (
+        <>
+          {Icon && <Icon className="w-4 h-4" />}
+          {children}
+        </>
+      )}
+    </>
+  );
+
+  if (to || as === Link) {
+    return (
+      <Link
+        ref={ref}
+        to={to}
+        className={buttonClasses}
+        onClick={onClick}
+        {...props}
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  if (href || as === 'a') {
+    return (
+      <a
+        ref={ref}
+        href={href}
+        className={buttonClasses}
+        onClick={onClick}
+        {...props}
+      >
+        {content}
+      </a>
+    );
+  }
 
   return (
     <motion.button
@@ -44,14 +89,7 @@ const Button = React.forwardRef(({
       transition={{ type: "spring", stiffness: 400, damping: 17 }}
       {...props}
     >
-      {loading ? (
-        <LoadingSpinner size="sm" />
-      ) : (
-        <>
-          {Icon && <Icon className="w-4 h-4" />}
-          {children}
-        </>
-      )}
+      {content}
     </motion.button>
   );
 });

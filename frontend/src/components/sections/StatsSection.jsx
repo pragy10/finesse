@@ -1,67 +1,35 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, Clock, Shield, Zap } from 'lucide-react';
+import { TrendingUp, Clock, FileText, Shield } from 'lucide-react';
 import { STATS } from '../../utils/constants';
 
+const icons = [TrendingUp, Clock, FileText, Shield];
+
 function StatsSection() {
-  const iconMap = {
-    'Documents Processed': TrendingUp,
-    'Accuracy Rate': Zap,
-    'Average Response': Clock,
-    'Secure Processing': Shield
-  };
-
   return (
-    <section className="py-16 bg-gray-100 dark:bg-gray-950 transition-colors">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
+    <section className="py-14 bg-primary-900 dark:bg-primary-950 transition-colors">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.5 }}
           viewport={{ once: true }}
-          className="text-center mb-12"
+          className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-white/10"
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Trusted by Professionals Worldwide
-          </h2>
-          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Numbers that speak for our commitment to excellence and reliability
-          </p>
-        </motion.div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {STATS.map((stat, index) => {
-            const Icon = iconMap[stat.label] || TrendingUp;
-            
+            const Icon = icons[index] || TrendingUp;
             return (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="bg-white dark:bg-gray-800 rounded-xl p-6 text-center shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200"
-              >
-                <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Icon className="w-6 h-6 text-white" />
-                </div>
-                
-                <motion.div 
-                  initial={{ scale: 0 }}
-                  whileInView={{ scale: 1 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 + 0.3 }}
-                  viewport={{ once: true }}
-                  className="text-3xl md:text-4xl font-bold text-primary-600 dark:text-primary-400 mb-2"
-                >
+              <div key={index} className="text-center px-6 py-6 md:py-4">
+                <Icon className="w-5 h-5 text-secondary-400 mx-auto mb-2" />
+                <div className="text-2xl md:text-3xl font-bold text-white mb-0.5">
                   {stat.number}
-                </motion.div>
-                
-                <div className="font-semibold text-gray-900 dark:text-white mb-1">{stat.label}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">{stat.description}</div>
-              </motion.div>
+                </div>
+                <div className="text-xs font-semibold text-slate-300 mb-0.5">{stat.label}</div>
+                <div className="text-[11px] text-slate-500">{stat.description}</div>
+              </div>
             );
           })}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

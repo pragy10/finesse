@@ -1,6 +1,6 @@
 
 export const APP_NAME = 'Finesse';
-export const APP_DESCRIPTION = 'AI-powered document analysis and reasoning platform';
+export const APP_DESCRIPTION = 'Understand your insurance policy — in plain language.';
 
 export const API_BASE_URL = process.env.NODE_ENV === 'production' 
   ? 'https://your-api-domain.com' 
@@ -13,88 +13,88 @@ export const SUPPORTED_FILE_TYPES = ['.pdf', '.docx', '.jpg', '.jpeg', '.png', '
 export const FEATURES = [
   {
     icon: 'FileText',
-    title: "Multi-Format Support",
-    description: "Upload PDFs, DOCX, images, and more. Our system extracts text from any document format with 99% accuracy.",
-    benefits: ["PDF, DOCX, Images", "OCR Technology", "Batch Processing"]
-  },
-  {
-    icon: 'Brain',
-    title: "AI-Powered Analysis",
-    description: "Advanced language models analyze your documents and provide intelligent insights powered by Google Gemini.",
-    benefits: ["Google Gemini", "Context Understanding", "Smart Reasoning"]
+    title: 'Policy Document Upload',
+    description: 'Upload your health, life, motor, or home insurance policy as a PDF, DOCX, or scanned image. We handle the rest.',
+    benefits: ['PDF, DOCX, Scanned images', 'Multi-policy support', 'Persistent cloud storage']
   },
   {
     icon: 'Search',
-    title: "Semantic Search",
-    description: "Find information based on meaning, not just keywords. Ask questions in natural language.",
-    benefits: ["Natural Language", "Vector Search", "Contextual Results"]
+    title: 'Clause & Coverage Lookup',
+    description: 'Find exactly what your policy says about any treatment, event, or situation — no more reading 80 pages of fine print.',
+    benefits: ['Natural language search', 'Exact clause references', 'Highlighted matches']
+  },
+  {
+    icon: 'Brain',
+    title: 'Claim Eligibility Check',
+    description: 'Ask whether a specific procedure, treatment, or event is covered under your policy. Get a clear yes, no, or conditional answer.',
+    benefits: ['Condition-based analysis', 'Waiting period checks', 'Exclusion detection']
   },
   {
     icon: 'Shield',
-    title: "Secure & Private",
-    description: "Enterprise-grade encryption and privacy protection. No data retention after processing.",
-    benefits: ["End-to-end Encryption", "Privacy First", "GDPR Compliant"]
+    title: 'Privacy-First Processing',
+    description: 'Your documents are encrypted and stored securely. We never share your policy data or personal details with third parties.',
+    benefits: ['End-to-end encryption', 'No third-party sharing', 'Delete any time']
   },
   {
     icon: 'Zap',
-    title: "Lightning Fast",
-    description: "Get instant results with sub-3 second response times and optimized processing.",
-    benefits: ["< 3s Response", "Real-time Processing", "Optimized Pipeline"]
+    title: 'Plain Language Answers',
+    description: 'Insurance policies are written for lawyers. Our AI translates them into simple, jargon-free answers you can actually use.',
+    benefits: ['Jargon-free summaries', 'Section citations', 'Confidence indicators']
   },
   {
     icon: 'Globe',
-    title: "Cloud-Powered",
-    description: "Scalable infrastructure ensures reliable performance with 99.9% uptime guarantee.",
-    benefits: ["99.9% Uptime", "Auto-scaling", "Global CDN"]
+    title: 'Multi-Policy Comparison',
+    description: 'Upload more than one policy and compare coverage, waiting periods, and exclusions side by side.',
+    benefits: ['Side-by-side comparison', 'Gap detection', 'Multiple insurers']
   }
 ];
 
 export const STATS = [
-  { number: "10K+", label: "Documents Processed", description: "Successfully analyzed and processed" },
-  { number: "99.9%", label: "Accuracy Rate", description: "Precision in document analysis" },
-  { number: "< 3s", label: "Average Response", description: "Lightning fast AI processing" },
-  { number: "100%", label: "Secure Processing", description: "Enterprise-grade security" }
+  { number: '50+', label: 'Policy Clauses Decoded', description: 'Per document, on average' },
+  { number: '< 5s', label: 'Average Response', description: 'From question to answer' },
+  { number: '6+', label: 'Document Formats', description: 'PDF, DOCX, images & more' },
+  { number: '100%', label: 'Private & Secure', description: 'Your data, your control' }
 ];
 
 export const HOW_IT_WORKS_STEPS = [
   {
     icon: 'Upload',
-    title: "Upload Documents",
-    description: "Drag and drop your files or browse to upload. Support for multiple formats with automatic detection.",
-    details: ["Multiple file formats", "Batch upload support", "Automatic text extraction", "Error handling"]
+    title: 'Upload Your Policy',
+    description: 'Drop your insurance policy document — PDF, DOCX, or a scanned image. It is stored securely in your personal document vault.',
+    details: ['Health, life, motor, home policies', 'Multiple formats supported', 'Persists until you delete it', 'Up to 10 documents']
   },
   {
     icon: 'Cpu',
-    title: "AI Processing",
-    description: "Our AI analyzes, chunks, and creates searchable embeddings from your content using advanced NLP.",
-    details: ["Document parsing", "Smart chunking", "Vector embeddings", "Knowledge graph creation"]
+    title: 'AI Reads the Fine Print',
+    description: 'Our AI parses every clause, identifies exclusions, waiting periods, coverage limits, and key conditions — so you do not have to.',
+    details: ['Clause-by-clause parsing', 'Exclusion & waiting period detection', 'Vector search index built', 'Ready in seconds']
   },
   {
     icon: 'MessageSquare',
-    title: "Ask Questions",
-    description: "Chat with your documents using natural language and get intelligent answers with source citations.",
-    details: ["Natural language queries", "Contextual understanding", "Source citations", "Confidence scoring"]
+    title: 'Ask in Plain English',
+    description: 'Ask any question about your coverage. Get precise, plain-language answers with the exact policy section cited as proof.',
+    details: ['Natural language questions', 'Exact clause citations', 'Claim eligibility checks', 'Multi-turn conversation']
   }
 ];
 
 export const QUICK_QUESTIONS = {
   general: [
-    "What are the key points in my documents?",
-    "Summarize my policy coverage",
-    "What are the important terms and conditions?",
-    "Are there any exclusions I should know about?"
+    'What does my policy cover overall?',
+    'Summarise all exclusions in my policy',
+    'What are the important terms and conditions?',
+    'Are there any sub-limits I should know about?'
   ],
   claim_analysis: [
-    "Am I eligible for knee surgery coverage?",
-    "What's covered for a 45M with diabetes?",
-    "Can I claim for dental treatment after 6 months?",
-    "Is maternity coverage available in Mumbai?"
+    'Am I eligible for knee surgery coverage?',
+    'Is dental treatment covered after 6 months?',
+    'What is the waiting period for maternity benefits?',
+    'Does my policy cover day-care procedures?'
   ],
   document_summary: [
-    "Give me a summary of all uploaded documents",
-    "What are the main topics covered?",
-    "List all important dates and deadlines",
-    "What are the key financial terms?"
+    'Give me a summary of all uploaded documents',
+    'What are the main topics covered?',
+    'List all important dates and deadlines',
+    'What are the key financial limits in my policy?'
   ]
 };
 
@@ -108,13 +108,13 @@ export const formatFileSize = (bytes) => {
 
 export const getConfidenceColor = (level) => {
   const colors = {
-    'Very High': 'text-green-600 bg-green-100',
-    'High': 'text-green-500 bg-green-50', 
-    'Medium': 'text-yellow-500 bg-yellow-50',
-    'Low': 'text-red-500 bg-red-50',
-    'Very Low': 'text-red-600 bg-red-100'
+    'Very High': 'text-green-700 bg-green-100',
+    'High':      'text-green-600 bg-green-50',
+    'Medium':    'text-amber-600 bg-amber-50',
+    'Low':       'text-red-500 bg-red-50',
+    'Very Low':  'text-red-600 bg-red-100'
   };
-  return colors[level] || 'text-gray-500 bg-gray-50';
+  return colors[level] || 'text-slate-500 bg-slate-50';
 };
 
 export const extractUserProfile = (query) => {

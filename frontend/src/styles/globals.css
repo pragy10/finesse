@@ -1,39 +1,85 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Custom component classes */
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    scroll-behavior: smooth;
+  }
+
+  /* Offset scroll for sticky 64px header */
+  [id] {
+    scroll-margin-top: 80px;
+  }
+
+  body {
+    @apply text-slate-800 dark:text-slate-100;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+/* 
+  Global Headings & Subheadings Strategy:
+  Enforce 'DM Serif Display' on all heading tags (h1-h6),
+  explicit serif/heading classes, and card/section title elements.
+*/
+h1, h2, h3, h4, h5, h6,
+.font-heading,
+.font-serif,
+[data-heading] {
+  font-family: 'DM Serif Display', Georgia, serif !important;
+  font-weight: 400 !important;
+  letter-spacing: -0.01em;
+}
+
 @layer components {
   .btn {
     @apply inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
   }
-  
+
   .btn-primary {
-    @apply bg-primary-500 text-white hover:bg-primary-600 focus:ring-primary-500 shadow-sm hover:shadow-lg hover:-translate-y-0.5;
+    @apply bg-primary-700 text-white hover:bg-primary-800 focus:ring-primary-600 shadow-md hover:shadow-lg hover:-translate-y-0.5;
   }
-  
+
   .btn-secondary {
-    @apply bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-500;
+    @apply bg-secondary-500 text-white hover:bg-secondary-600 focus:ring-secondary-400 shadow-md hover:shadow-lg hover:-translate-y-0.5;
   }
-  
+
   .btn-outline {
-    @apply bg-transparent text-primary-600 border border-primary-300 hover:bg-primary-50 focus:ring-primary-500;
+    @apply bg-transparent text-primary-700 border border-primary-300 hover:bg-primary-50 focus:ring-primary-500;
   }
-  
+
   .btn-ghost {
-    @apply bg-transparent text-gray-600 hover:bg-gray-100 focus:ring-gray-500;
+    @apply bg-transparent text-slate-600 hover:bg-slate-100 focus:ring-slate-400;
   }
-  
+
   .btn-sm {
     @apply px-3 py-1.5 text-sm;
   }
-  
+
   .btn-md {
     @apply px-4 py-2 text-sm;
   }
-  
+
   .btn-lg {
     @apply px-6 py-3 text-base;
+  }
+
+  /* Serif heading utility */
+  .font-heading {
+    font-family: 'DM Serif Display', Georgia, serif !important;
+  }
+
+  /* Paper-texture card */
+  .card-document {
+    @apply bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm;
+  }
+
+  /* Subtle section divider line */
+  .section-divider {
+    @apply w-12 h-1 bg-secondary-500 rounded-full mx-auto;
   }
 }

@@ -106,68 +106,75 @@ function DocumentsPage() {
   );
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      {/* Header & Stats */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary-500 text-white rounded-xl flex items-center justify-center">
-              <Cloud className="w-6 h-6" />
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
+      {/* Page header banner */}
+      <div className="bg-primary-900 dark:bg-primary-950 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <div className="p-2.5 bg-white/10 rounded-xl">
+                <Cloud className="w-7 h-7 text-secondary-400" />
+              </div>
+              <div>
+                <h1 className="font-serif text-2xl md:text-3xl text-white mb-1">
+                  Document Storage & Management
+                </h1>
+                <p className="text-primary-200 text-sm">
+                  Uploaded files persist in your cloud storage (Supabase) and remain accessible across browser sessions.
+                </p>
+              </div>
             </div>
-            Document Storage & Management
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Uploaded files persist in your cloud storage (Supabase) and remain accessible across browser sessions.
-          </p>
-        </div>
 
-        {documents.length > 0 && (
-          <Button
-            onClick={handleClearAll}
-            variant="outline"
-            size="sm"
-            className="text-red-600 dark:text-red-400 border-red-300 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-950/40"
-          >
-            <Trash2 className="w-4 h-4 mr-2" />
-            Clear All Documents
-          </Button>
-        )}
-      </div>
-
-      {/* Cloud Status Chips */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div className="p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl flex items-center gap-3">
-          <div className="w-9 h-9 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-lg flex items-center justify-center">
-            <FileText className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">Total Documents</div>
-            <div className="text-lg font-bold text-gray-900 dark:text-white">{documents.length}</div>
-          </div>
-        </div>
-
-        <div className="p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl flex items-center gap-3">
-          <div className="w-9 h-9 bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 rounded-lg flex items-center justify-center">
-            <Database className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">Indexed Vectors</div>
-            <div className="text-lg font-bold text-gray-900 dark:text-white">
-              {documents.reduce((acc, d) => acc + (d.chunkCount || 0), 0)} chunks
-            </div>
-          </div>
-        </div>
-
-        <div className="p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl flex items-center gap-3">
-          <div className="w-9 h-9 bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 rounded-lg flex items-center justify-center">
-            <Cloud className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">Storage Backend</div>
-            <div className="text-sm font-semibold text-green-600 dark:text-green-400">Supabase Cloud Active</div>
+            {documents.length > 0 && (
+              <Button
+                onClick={handleClearAll}
+                variant="outline"
+                size="sm"
+                className="text-red-300 border-red-400/40 hover:bg-red-500/20 hover:text-white"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Clear All Documents
+              </Button>
+            )}
           </div>
         </div>
       </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-5 relative z-10 pb-16">
+        {/* Cloud Status Chips */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          <div className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm rounded-xl flex items-center gap-3">
+            <div className="w-10 h-10 bg-primary-100 dark:bg-primary-950/60 text-primary-700 dark:text-primary-300 rounded-xl flex items-center justify-center">
+              <FileText className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-xs text-slate-500 dark:text-slate-400">Total Documents</div>
+              <div className="text-xl font-bold text-slate-900 dark:text-white">{documents.length}</div>
+            </div>
+          </div>
+
+          <div className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm rounded-xl flex items-center gap-3">
+            <div className="w-10 h-10 bg-secondary-100 dark:bg-secondary-950/60 text-secondary-700 dark:text-secondary-300 rounded-xl flex items-center justify-center">
+              <Database className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-xs text-slate-500 dark:text-slate-400">Indexed Vectors</div>
+              <div className="text-xl font-bold text-slate-900 dark:text-white">
+                {documents.reduce((acc, d) => acc + (d.chunkCount || 0), 0)} chunks
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm rounded-xl flex items-center gap-3">
+            <div className="w-10 h-10 bg-green-100 dark:bg-green-950/60 text-green-700 dark:text-green-400 rounded-xl flex items-center justify-center">
+              <Cloud className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-xs text-slate-500 dark:text-slate-400">Storage Backend</div>
+              <div className="text-sm font-semibold text-green-600 dark:text-green-400">Supabase Cloud Active</div>
+            </div>
+          </div>
+        </div>
 
       {/* Upload Box */}
       <Card className="p-6 mb-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
@@ -355,6 +362,7 @@ function DocumentsPage() {
             </p>
           </Card>
         )}
+      </div>
       </div>
     </div>
   );

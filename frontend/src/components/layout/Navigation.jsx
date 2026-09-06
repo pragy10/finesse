@@ -1,116 +1,41 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { 
-  Home, 
-  Upload, 
-  MessageSquare, 
-  Info, 
-  Settings, 
-  HelpCircle,
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import {
+  Home,
+  Upload,
+  MessageSquare,
+  Info,
   FileText,
-  BarChart3,
   Users,
   ChevronDown,
-  ExternalLink
+  ExternalLink,
+  HelpCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 function Navigation({ variant = 'header' }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const [activeDropdown, setActiveDropdown] = useState(null);
 
   const mainNavItems = [
-    { 
-      path: '/', 
-      label: 'Home', 
-      icon: Home,
-      description: 'Welcome page and overview'
-    },
-    { 
-      path: '/dashboard', 
-      label: 'Dashboard', 
-      icon: Upload,
-      description: 'Upload and analyze documents'
-    },
-    { 
-      path: '/documents', 
-      label: 'Documents', 
-      icon: FileText,
-      description: 'Manage persistent cloud documents'
-    },
-    { 
-      path: '/profile', 
-      label: 'Profile', 
-      icon: Users,
-      description: 'Insurance & personal details'
-    },
-    { 
-      path: '/about', 
-      label: 'About', 
-      icon: Info,
-      description: 'Learn about Finesse'
-    },
-    { 
-      path: '/contact', 
-      label: 'Contact', 
-      icon: MessageSquare,
-      description: 'Get in touch with us'
-    }
+    { path: '/',          label: 'Home',      icon: Home,         description: 'Welcome page and overview' },
+    { path: '/dashboard', label: 'Dashboard', icon: Upload,       description: 'Upload and analyse documents' },
+    { path: '/documents', label: 'Documents', icon: FileText,     description: 'Manage cloud documents' },
+    { path: '/profile',   label: 'Profile',   icon: Users,        description: 'Insurance & personal details' },
+    { path: '/about',     label: 'About',     icon: Info,         description: 'Learn about Finesse' },
+    { path: '/contact',   label: 'Contact',   icon: MessageSquare,description: 'Get in touch' }
   ];
 
   const dashboardNavItems = [
-    {
-      label: 'Upload',
-      icon: Upload,
-      path: '/dashboard#upload',
-      description: 'Upload new documents'
-    },
-    {
-      label: 'AI Chat',
-      icon: MessageSquare,
-      path: '/dashboard#ai-chat',
-      description: 'Chat with your documents'
-    },
-    {
-      label: 'Search',
-      icon: FileText,
-      path: '/dashboard#search',
-      description: 'Advanced semantic search'
-    },
-    {
-      label: 'Analytics',
-      icon: BarChart3,
-      path: '/dashboard#analytics',
-      description: 'Document insights'
-    }
+    { label: 'AI Chat',  icon: MessageSquare, hash: 'ai-chat' },
+    { label: 'Upload',   icon: Upload,        hash: 'upload' },
+    { label: 'Search',   icon: FileText,      hash: 'search' },
   ];
 
   const resourcesDropdown = [
-    {
-      label: 'Documentation',
-      icon: FileText,
-      href: '#docs',
-      description: 'API docs and guides'
-    },
-    {
-      label: 'Help Center',
-      icon: HelpCircle,
-      href: '#help',
-      description: 'Get support and answers'
-    },
-    {
-      label: 'Community',
-      icon: Users,
-      href: '#community',
-      description: 'Join our community'
-    },
-    {
-      label: 'GitHub',
-      icon: ExternalLink,
-      href: 'https://github.com/pragy10/finesse',
-      external: true,
-      description: 'View source code'
-    }
+    { label: 'Help Center',    icon: HelpCircle,   href: '#help',                              description: 'Get support and answers' },
+    { label: 'GitHub',         icon: ExternalLink, href: 'https://github.com/pragy10/finesse', external: true, description: 'View source code' }
   ];
 
   useEffect(() => {
@@ -120,6 +45,16 @@ function Navigation({ variant = 'header' }) {
       return () => document.removeEventListener('click', handleClickOutside);
     }
   }, [activeDropdown]);
+
+  // Scroll-aware hash navigation: navigates to /dashboard then scrolls to the section
+  const handleDashboardNav = (hash) => {
+    if (location.pathname === '/dashboard') {
+      const el = document.getElementById(hash);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      navigate(`/dashboard#${hash}`);
+    }
+  };
 
   const isActivePath = (path) => {
     if (path === '/') return location.pathname === '/';
@@ -152,38 +87,18 @@ function Navigation({ variant = 'header' }) {
             <ul className="nav-list">
               {dashboardNavItems.map((item, index) => (
                 <li key={index}>
-                  <a
-                    href={item.path}
-                    className="nav-item"
+                  <button
+                    onClick={() => handleDashboardNav(item.hash)}
+                    className="nav-item w-full text-left"
                   >
                     <item.icon className="nav-icon" />
                     <span className="nav-label">{item.label}</span>
-                  </a>
+                  </button>
                 </li>
               ))}
             </ul>
           </div>
         )}
-
-        <div className="nav-section">
-          <div className="nav-section-title">Resources</div>
-          <ul className="nav-list">
-            {resourcesDropdown.map((item, index) => (
-              <li key={index}>
-                <a
-                  href={item.href}
-                  className="nav-item"
-                  target={item.external ? '_blank' : undefined}
-                  rel={item.external ? 'noopener noreferrer' : undefined}
-                >
-                  <item.icon className="nav-icon" />
-                  <span className="nav-label">{item.label}</span>
-                  {item.external && <ExternalLink className="external-icon" />}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
       </nav>
     );
   }
@@ -198,16 +113,13 @@ function Navigation({ variant = 'header' }) {
         return { label, path };
       })
     ];
-
     return (
       <nav className="breadcrumb-navigation">
         <ol className="breadcrumb-list">
           {breadcrumbs.map((crumb, index) => (
             <li key={crumb.path} className="breadcrumb-item">
               {index < breadcrumbs.length - 1 ? (
-                <Link to={crumb.path} className="breadcrumb-link">
-                  {crumb.label}
-                </Link>
+                <Link to={crumb.path} className="breadcrumb-link">{crumb.label}</Link>
               ) : (
                 <span className="breadcrumb-current">{crumb.label}</span>
               )}
@@ -235,8 +147,7 @@ function Navigation({ variant = 'header' }) {
             </Link>
           </li>
         ))}
-        
-        {/* Resources Dropdown */}
+
         <li className="nav-dropdown-container">
           <button
             className={`nav-item dropdown-trigger ${activeDropdown === 'resources' ? 'active' : ''}`}
@@ -254,10 +165,10 @@ function Navigation({ variant = 'header' }) {
             {activeDropdown === 'resources' && (
               <motion.div
                 className="nav-dropdown"
-                initial={{ opacity: 0, y: -10 }}
+                initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.15 }}
               >
                 <ul className="dropdown-list">
                   {resourcesDropdown.map((item, index) => (
@@ -274,9 +185,7 @@ function Navigation({ variant = 'header' }) {
                             <span className="dropdown-item-label">{item.label}</span>
                             {item.external && <ExternalLink className="external-icon" />}
                           </div>
-                          <div className="dropdown-item-description">
-                            {item.description}
-                          </div>
+                          <div className="dropdown-item-description">{item.description}</div>
                         </div>
                       </a>
                     </li>
