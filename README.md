@@ -188,4 +188,4 @@ To view live dashboards locally (no Docker required):
 
 ---
 
-Built by [Pragy](https://github.com/pragy10)
+Built by [pragy10](https://github.com/pragy10)
