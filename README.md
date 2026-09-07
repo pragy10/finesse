@@ -1,157 +1,165 @@
-# Finesse - AI-Powered Document Intelligence Platform
+﻿# Finesse
 
-**Transform your documents into intelligent insights with advanced AI analysis and semantic search capabilities.**
+**AI-powered insurance policy assistant.** Upload your policy PDF, ask questions in plain English, and get answers with exact clause citations.
 
-## 🚀 Features
+---
 
-- **Multi-Format Support** - Upload PDFs, DOCX, images, and more
-- **AI-Powered Analysis** - Advanced document understanding with Google Gemini
-- **Semantic Search** - Find information based on meaning, not just keywords
-- **Real-time Chat** - Ask questions and get intelligent answers from your documents
-- **Secure Processing** - Enterprise-grade security with no permanent data storage
-- **Lightning Fast** - Sub-3 second response times with optimized processing
+## What It Does
 
-## 🛠️ Tech Stack
+- Upload insurance policy documents (PDF)
+- Ask questions like *"Am I covered for water damage?"*
+- Get answers backed by direct quotes from your policy
+- Smart AI reasons through your policy using semantic search
 
-### Backend
-- **Node.js & Express** - RESTful API server
-- **Google Gemini AI** - Advanced language model for document reasoning
-- **Qdrant Vector DB** - High-performance vector database for semantic search
-- **Hugging Face** - Embeddings generation for semantic understanding
-- **Multer** - File upload handling
-- **Multiple Document Parsers** - PDF, DOCX, OCR for images
+---
 
-### Frontend
-- **React 18** - Modern UI framework
-- **React Router** - Client-side routing
-- **Framer Motion** - Smooth animations and transitions
-- **Lucide React** - Beautiful icon library
-- **Axios** - HTTP client for API communication
-- **Responsive Design** - Mobile-first approach
+## Tech Stack
 
-## 📋 Prerequisites
+| Area | Tools |
+|---|---|
+| Frontend | React, Vite, Tailwind CSS, Framer Motion |
+| Backend | Node.js, Express |
+| Auth | Firebase (email/password + Google) |
+| Database | Firestore (doc metadata) |
+| Storage | Supabase (PDF files) |
+| Vector DB | Qdrant Cloud |
+| Embeddings | HuggingFace (`all-MiniLM-L6-v2`) |
+| AI / LLM | OpenRouter (DeepSeek, Gemini, etc.) |
 
-- Node.js 16+ and npm
-- Google AI API key (for Gemini)
-- Qdrant Cloud account or local instance
-- Hugging Face API key
+---
 
-## 🔧 Installation
+## Prerequisites
 
-### 1. Clone Repository
+- **Node.js** v18+
+- **Firebase** project with Auth (email + Google) and Firestore enabled
+- **Supabase** project with a public storage bucket named `documents`
+- **Qdrant Cloud** account with a collection named `policy_documents` (384 dimensions, cosine distance)
+- **HuggingFace** account (free token)
+- **OpenRouter** API key (get one at [openrouter.ai](https://openrouter.ai))
+
+---
+
+## Setup
+
+### 1. Clone the repo
+
 ```bash
 git clone https://github.com/pragy10/finesse.git
 cd finesse
 ```
 
-### 2. Backend Setup
+### 2. Backend
+
 ```bash
 cd backend
 npm install
-
-# Create .env file
-echo "QDRANT_URL=your_qdrant_url
-QDRANT_API_KEY=your_qdrant_key
-GOOGLE_API_KEY=your_google_gemini_key
-HF_TOKEN=your_huggingface_token" > .env
-
-# Create Qdrant collection
-node setup/createCollection.js
-
-# Start backend server
-npm start
 ```
 
-### 3. Frontend Setup
+Create a `.env` file in the `backend/` folder:
+
+```env
+# Qdrant
+QDRANT_URL=https://your-cluster.cloud.qdrant.io
+QDRANT_API_KEY=your_qdrant_api_key
+
+# HuggingFace
+HF_TOKEN=your_huggingface_token
+
+# OpenRouter (LLM)
+OPENROUTER_API_KEY=your_openrouter_api_key
+OPENROUTER_MODEL=deepseek/deepseek-chat
+
+# Supabase
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+SUPABASE_BUCKET=documents
+
+# Firebase Service Account
+FIREBASE_SERVICE_ACCOUNT_PATH=./config/firebase-service-account.json
+
+NODE_ENV=development
+```
+
+> **Firebase Service Account:** Go to Firebase Console → Project Settings → Service Accounts → Generate new private key. Save the JSON file as `backend/config/firebase-service-account.json`.
+
+Start the backend:
+
 ```bash
-cd frontend
-npm install
 npm run dev
 ```
 
-## 🌐 Usage
+Runs on `http://localhost:5000`
 
-1. **Upload Documents** - Drag & drop or select files (PDF, DOCX, images)
-2. **AI Analysis** - Documents are automatically parsed, chunked, and embedded
-3. **Ask Questions** - Use natural language to query your documents
-4. **Get Insights** - Receive intelligent answers with confidence scores and source citations
+### 3. Frontend
 
-## 📁 Project Structure
+```bash
+cd frontend
+npm install
+```
+
+Create a `.env` file in the `frontend/` folder:
+
+```env
+VITE_FIREBASE_API_KEY=your_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your-project-id
+VITE_FIREBASE_STORAGE_BUCKET=your-project.firebasestorage.app
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
+VITE_API_URL=http://localhost:5000
+```
+
+Start the frontend:
+
+```bash
+npm run dev
+```
+
+Runs on `http://localhost:5173`
+
+---
+
+## Qdrant Collection Setup
+
+If you have not created the Qdrant collection yet, run:
+
+```bash
+cd backend
+node setup/createCollection.js
+```
+
+This creates a `policy_documents` collection with 384 dimensions and cosine distance.
+
+---
+
+## Project Structure
 
 ```
 finesse/
 ├── backend/
-│   ├── llm/              # AI reasoning engine
-│   ├── vector/           # Vector database operations
-│   ├── parsing/          # Document parsing utilities
-│   ├── routes/           # API endpoints
-│   └── setup/            # Configuration files
+│   ├── config/         # Firebase, Supabase, OpenRouter clients
+│   ├── llm/            # AI reasoning engine & prompt templates
+│   ├── vector/         # Qdrant vector search
+│   ├── parsing/        # PDF text extraction
+│   ├── routes/         # API endpoints
+│   ├── middleware/     # Firebase auth middleware
+│   └── setup/          # One-time setup scripts
 └── frontend/
-    ├── src/
-    │   ├── components/   # React components
-    │   ├── pages/        # Application pages
-    │   ├── context/      # State management
-    │   └── styles/       # CSS styles
-    └── public/           # Static assets
+    └── src/
+        ├── components/ # UI components
+        ├── pages/      # Route pages
+        ├── context/    # Auth & document state
+        └── styles/     # Global CSS
 ```
 
-## 🔑 Environment Variables
+---
 
-Create `.env` file in the backend directory:
+## Notes
 
-```env
-QDRANT_URL=https://your-cluster.cloud.qdrant.io
-QDRANT_API_KEY=your_qdrant_api_key
-GOOGLE_API_KEY=your_google_gemini_api_key
-HF_TOKEN=your_huggingface_token
-```
+- The Firebase service account JSON is **not committed to git** — add it manually.
+- Swap LLM models anytime via `OPENROUTER_MODEL` in `.env`. Any model on [openrouter.ai/models](https://openrouter.ai/models) works.
+- Supabase is used **only for file storage** — all metadata lives in Firestore.
 
-## 🚦 API Endpoints
+---
 
-- `POST /upload` - Upload and process documents
-- `POST /ask` - AI-powered document questioning
-- `POST /search` - Semantic search across documents
-- `GET /documents` - List uploaded documents
-- `POST /clear-all` - Clear all documents
-
-## 📱 Key Components
-
-- **Document Upload** - Multi-file upload with drag & drop
-- **AI Assistant** - Conversational interface with Google Gemini
-- **Semantic Search** - Vector-based document search
-- **Document Library** - Manage uploaded documents
-
-## 🎯 Use Cases
-
-- **Insurance Claim Processing** - Analyze policies and determine eligibility
-- **Legal Document Review** - Extract key information from contracts
-- **Research & Analysis** - Query academic papers and reports
-- **Knowledge Management** - Build searchable document repositories
-
-## 🔒 Security
-
-- End-to-end encryption for document processing
-- No permanent storage of uploaded documents
-- Secure API key management
-- CORS protection and input validation
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- Google Gemini for advanced AI capabilities
-- Qdrant for high-performance vector search
-- Hugging Face for embedding models
-- React and Node.js communities
-
-**Built with ❤️ for intelligent document processing**
+Built by [Pragy](https://github.com/pragy10)
