@@ -1,4 +1,4 @@
-﻿# Finesse
+# Finesse
 
 **AI-powered insurance policy assistant.** Upload your policy PDF, ask questions in plain English, and get answers with exact clause citations.
 
@@ -25,6 +25,7 @@
 | Vector DB | Qdrant Cloud |
 | Embeddings | HuggingFace (`all-MiniLM-L6-v2`) |
 | AI / LLM | OpenRouter (DeepSeek, Gemini, etc.) |
+| Monitoring | Prometheus & Grafana (via `prom-client`) |
 
 ---
 
@@ -88,7 +89,7 @@ Start the backend:
 npm run dev
 ```
 
-Runs on `http://localhost:5000`
+Runs on `http://localhost:3001`
 
 ### 3. Frontend
 
@@ -106,7 +107,7 @@ VITE_FIREBASE_PROJECT_ID=your-project-id
 VITE_FIREBASE_STORAGE_BUCKET=your-project.firebasestorage.app
 VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 VITE_FIREBASE_APP_ID=your_app_id
-VITE_API_URL=http://localhost:5000
+VITE_API_URL=http://localhost:3001
 ```
 
 Start the frontend:
@@ -137,20 +138,43 @@ This creates a `policy_documents` collection with 384 dimensions and cosine dist
 ```
 finesse/
 ├── backend/
-│   ├── config/         # Firebase, Supabase, OpenRouter clients
+│   ├── config/         # Firebase, Supabase, OpenRouter & metrics
 │   ├── llm/            # AI reasoning engine & prompt templates
 │   ├── vector/         # Qdrant vector search
 │   ├── parsing/        # PDF text extraction
-│   ├── routes/         # API endpoints
+│   ├── routes/         # API endpoints (/ask, /documents, etc.)
 │   ├── middleware/     # Firebase auth middleware
 │   └── setup/          # One-time setup scripts
-└── frontend/
-    └── src/
-        ├── components/ # UI components
-        ├── pages/      # Route pages
-        ├── context/    # Auth & document state
-        └── styles/     # Global CSS
+├── frontend/
+│   └── src/
+│       ├── components/ # UI components
+│       ├── pages/      # Route pages
+│       ├── context/    # Auth & document state
+│       └── styles/     # Global CSS
+└── monitoring/         # Prometheus scrape config & Grafana dashboard
 ```
+
+---
+
+## 📊 Monitoring (Prometheus & Grafana)
+
+The backend exposes real-time Prometheus metrics at `http://localhost:3001/metrics` tracking HTTP traffic, AI query latency, and document activity.
+
+To view live dashboards locally (no Docker required):
+
+1. **Prometheus:** Run the binary with our pre-configured YAML:
+   ```bash
+   prometheus --config.file=monitoring/prometheus.yml
+   ```
+   Scrapes metrics from `http://localhost:3001/metrics` (UI: `http://localhost:9090`).
+
+2. **Grafana:** Run the Grafana server:
+   ```bash
+   grafana server
+   ```
+   Open `http://localhost:3000` (default login: `admin` / `admin`), add Prometheus as data source, and import `monitoring/grafana-dashboard.json`.
+
+> See [`monitoring/README.md`](monitoring/README.md) for the complete step-by-step setup guide.
 
 ---
 

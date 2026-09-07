@@ -10,6 +10,7 @@ const qdrantClient = require("../vector/qdrantClient");
 const parseDocument = require("../parsing/parseDocument");
 const smartChunker = require("../setup/smartChunker");
 const storeChunks = require("../vector/storeChunks");
+const { documentsUploadedTotal, documentsDeletedTotal } = require("../config/metrics");
 
 // Configure temporary disk storage for parsing
 const storage = multer.diskStorage({
@@ -130,6 +131,7 @@ router.post("/documents/upload", requireAuth, upload.array("files", 10), async (
       });
 
       totalChunksCount += chunks.length;
+      documentsUploadedTotal.inc();
       console.log(`[✓] Successfully processed and stored ${file.originalname}`);
 
     } catch (fileError) {
@@ -207,6 +209,7 @@ router.delete("/documents/:docId", requireAuth, async (req, res) => {
     await docRef.delete();
     console.log(`[✓] Deleted document metadata from Firestore: ${docId}`);
 
+    documentsDeletedTotal.inc();
     res.json({ message: "Document deleted successfully", id: docId });
   } catch (error) {
     console.error("[x] Delete document error:", error);

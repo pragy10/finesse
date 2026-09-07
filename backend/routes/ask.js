@@ -12,6 +12,7 @@ const {
   generateStructuredDecision,
   analyzeClaimEligibility
 } = require("../llm/reasoningEngine");
+const { aiQueriesTotal, aiQueryDuration, aiQueryErrors } = require("../config/metrics");
 
 // Helper function to build Qdrant search filters
 function buildSearchFilter(userId, fileName, documentIds) {
@@ -63,6 +64,8 @@ async function queryQdrant(collectionName, searchParams) {
 }
 
 router.post("/ask", optionalAuth, async (req, res) => {
+  aiQueriesTotal.inc({ type: "basic" });
+  const endTimer = aiQueryDuration.startTimer({ type: "basic" });
   try {
     const { 
       query, 
@@ -74,6 +77,7 @@ router.post("/ask", optionalAuth, async (req, res) => {
     } = req.body;
     
     if (!query || !query.trim()) {
+      endTimer();
       return res.status(400).json({ error: "Query is required" });
     }
 
@@ -107,6 +111,7 @@ router.post("/ask", optionalAuth, async (req, res) => {
     console.log(`[>] Found ${searchResults.length} relevant chunks`);
 
     if (searchResults.length === 0) {
+      endTimer();
       return res.json({
         query,
         response: "I couldn't find relevant information in your uploaded documents. Please make sure your documents are selected or upload new documents.",
@@ -119,6 +124,7 @@ router.post("/ask", optionalAuth, async (req, res) => {
     const llmResult = await generateReasonedResponse(query, searchResults, analysisType, history, userProfile);
     const confidence = calculateConfidence(searchResults, llmResult.response);
     
+    endTimer();
     res.json({
       query,
       response: llmResult.response,
@@ -134,6 +140,8 @@ router.post("/ask", optionalAuth, async (req, res) => {
     });
 
   } catch (error) {
+    endTimer();
+    aiQueryErrors.inc({ type: "basic" });
     console.error("[x] AI Assistant error:", error);
     res.status(500).json({ 
       error: "AI Assistant failed", 
@@ -143,6 +151,8 @@ router.post("/ask", optionalAuth, async (req, res) => {
 });
 
 router.post("/ask-smart", optionalAuth, async (req, res) => {
+  aiQueriesTotal.inc({ type: "smart" });
+  const endTimer = aiQueryDuration.startTimer({ type: "smart" });
   try {
     const { 
       query, 
@@ -154,6 +164,7 @@ router.post("/ask-smart", optionalAuth, async (req, res) => {
     } = req.body;
     
     if (!query || !query.trim()) {
+      endTimer();
       return res.status(400).json({ error: "Query is required" });
     }
 
@@ -191,6 +202,7 @@ router.post("/ask-smart", optionalAuth, async (req, res) => {
       const structuredDecision = await generateStructuredDecision(query, searchResults, parsedQuery, history, userProfile);
       const confidence = calculateConfidence(searchResults, JSON.stringify(structuredDecision));
       
+      endTimer();
       res.json({
         query,
         parsedQuery,
@@ -208,6 +220,7 @@ router.post("/ask-smart", optionalAuth, async (req, res) => {
       const llmResult = await generateReasonedResponse(query, searchResults, 'CLAIM_ANALYSIS', history, userProfile);
       const confidence = calculateConfidence(searchResults, llmResult.response);
       
+      endTimer();
       res.json({
         query,
         parsedQuery,
@@ -226,6 +239,8 @@ router.post("/ask-smart", optionalAuth, async (req, res) => {
     }
 
   } catch (error) {
+    endTimer();
+    aiQueryErrors.inc({ type: "smart" });
     console.error("[x] Smart AI Assistant error:", error);
     res.status(500).json({ 
       error: "Smart AI Assistant failed", 
