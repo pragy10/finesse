@@ -19,7 +19,7 @@ function FeaturesSection() {
           className="text-center mb-14"
         >
           <p className="text-secondary-600 dark:text-secondary-400 text-sm font-semibold uppercase tracking-widest mb-3">
-            What Finesse Does
+            What finesse Does
           </p>
           <h2 className="font-serif text-3xl md:text-4xl text-slate-900 dark:text-white mb-4">
             Everything You Need to<br className="hidden sm:block" /> Decode Your Policy
@@ -27,7 +27,7 @@ function FeaturesSection() {
           <div className="section-divider mb-5" />
           <p className="text-slate-500 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
             Stop struggling with policy documents written for lawyers.
-            Finesse gives you the answers you actually need.
+            finesse gives you the answers you actually need.
           </p>
         </motion.div>
 

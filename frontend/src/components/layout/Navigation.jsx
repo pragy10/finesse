@@ -23,7 +23,7 @@ function Navigation({ variant = 'header' }) {
     { path: '/dashboard', label: 'Dashboard', icon: Upload,       description: 'Upload and analyse documents' },
     { path: '/documents', label: 'Documents', icon: FileText,     description: 'Manage cloud documents' },
     { path: '/profile',   label: 'Profile',   icon: Users,        description: 'Insurance & personal details' },
-    { path: '/about',     label: 'About',     icon: Info,         description: 'Learn about Finesse' },
+    { path: '/about',     label: 'About',     icon: Info,         description: 'Learn about finesse' },
     { path: '/contact',   label: 'Contact',   icon: MessageSquare,description: 'Get in touch' }
   ];
 

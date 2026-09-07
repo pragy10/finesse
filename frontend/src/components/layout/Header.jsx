@@ -56,11 +56,13 @@ function Header() {
 
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 bg-primary-700 rounded-lg flex items-center justify-center shadow-sm group-hover:bg-primary-800 transition-colors">
-              <ShieldCheck className="w-4.5 h-4.5 text-white w-5 h-5" />
-            </div>
+            <img 
+              src="/notepad3d.png" 
+              alt="finesse Logo" 
+              className="w-8 h-8 object-contain transition-transform group-hover:scale-110 drop-shadow-sm" 
+            />
             <span className="font-serif text-xl font-normal text-primary-900 dark:text-white tracking-tight">
-              Finesse
+              finesse
             </span>
           </Link>
 

@@ -51,7 +51,7 @@ export const FEATURES = [
 
 export const STATS = [
   { number: '50+', label: 'Policy Clauses Decoded', description: 'Per document, on average' },
-  { number: '< 5s', label: 'Average Response', description: 'From question to answer' },
+  { number: '≈ 15s', label: 'Average Response', description: 'From question to answer' },
   { number: '6+', label: 'Document Formats', description: 'PDF, DOCX, images & more' },
   { number: '100%', label: 'Private & Secure', description: 'Your data, your control' }
 ];

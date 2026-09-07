@@ -79,7 +79,7 @@ function ProfilePage() {
           Insurance & Personal Profile
         </h1>
         <p className="text-gray-600 dark:text-gray-400 mt-2">
-          Keep your policy details up-to-date. Finesse AI will automatically use this information during claim eligibility checks without asking you repeatedly.
+          Keep your policy details up-to-date. finesse AI will automatically use this information during claim eligibility checks without asking you repeatedly.
         </p>
       </div>
 

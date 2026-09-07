@@ -148,7 +148,7 @@ function AboutPage() {
         >
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Meet the Creator</h2>
-            <p className="text-lg text-gray-600 dark:text-gray-300">The visionary behind Finesse's innovative document intelligence platform</p>
+            <p className="text-lg text-gray-600 dark:text-gray-300">The visionary behind finesse's innovative document intelligence platform</p>
           </div>
           
           <div className="flex justify-center">

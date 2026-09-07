@@ -1,4 +1,4 @@
-# Finesse
+# finesse
 
 **AI-powered insurance policy assistant.** Upload your policy PDF, ask questions in plain English, and get answers with exact clause citations.
 

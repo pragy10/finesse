@@ -70,10 +70,12 @@ function LoginPage() {
         <div>
           {/* Logo */}
           <div className="flex items-center gap-2.5 mb-14">
-            <div className="w-8 h-8 bg-white/15 rounded-lg flex items-center justify-center">
-              <ShieldCheck className="w-4 h-4 text-secondary-400" />
-            </div>
-            <span className="font-serif text-xl text-white">Finesse</span>
+            <img 
+              src="/notepad3d.png" 
+              alt="finesse Logo" 
+              className="w-8 h-8 object-contain drop-shadow-sm" 
+            />
+            <span className="font-serif text-xl text-white">finesse</span>
           </div>
 
           {/* Headline */}
@@ -129,14 +131,16 @@ function LoginPage() {
         >
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-2 mb-8">
-            <div className="w-7 h-7 bg-primary-700 rounded-lg flex items-center justify-center">
-              <ShieldCheck className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-serif text-lg text-slate-900 dark:text-white">Finesse</span>
+            <img 
+              src="/notepad3d.png" 
+              alt="finesse Logo" 
+              className="w-7 h-7 object-contain drop-shadow-sm" 
+            />
+            <span className="font-serif text-lg text-slate-900 dark:text-white">finesse</span>
           </div>
 
           <h1 className="font-serif text-2xl text-slate-900 dark:text-white mb-1">
-            {isRegister ? "Create your account" : "Sign in to Finesse"}
+            {isRegister ? "Create your account" : "Sign in to finesse"}
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mb-7">
             {isRegister

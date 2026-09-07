@@ -35,10 +35,12 @@ function Footer() {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-2.5 mb-4">
-              <div className="w-7 h-7 bg-primary-700 rounded-lg flex items-center justify-center">
-                <ShieldCheck className="w-4 h-4 text-white" />
-              </div>
-              <span className="font-serif text-lg text-white">Finesse</span>
+              <img 
+                src="/notepad3d.png" 
+                alt="finesse Logo" 
+                className="w-7 h-7 object-contain drop-shadow-sm" 
+              />
+              <span className="font-serif text-lg text-white">finesse</span>
             </div>
             <p className="text-sm text-slate-400 leading-relaxed mb-5">
               Understand your insurance policy in plain language.
@@ -82,7 +84,7 @@ function Footer() {
 
         <div className="border-t border-slate-800 pt-6 flex flex-col md:flex-row justify-between items-center gap-3">
           <p className="text-xs text-slate-500">
-            © {currentYear} Finesse. Built with care for every policyholder.
+            © {currentYear} finesse. Built with care for every policyholder.
           </p>
           <p className="text-xs text-slate-600">
             Powered by OpenRouter AI · Qdrant · Supabase · Firebase

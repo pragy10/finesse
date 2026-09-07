@@ -72,7 +72,7 @@ async function callOpenRouter({
           headers: {
             Authorization:  `Bearer ${apiKey.trim()}`,
             'HTTP-Referer': process.env.SITE_URL || 'http://localhost:5173',
-            'X-Title':      'Finesse Document Intelligence',
+            'X-Title':      'finesse Document Intelligence',
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({

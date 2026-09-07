@@ -1,4 +1,4 @@
-﻿# Monitoring Setup — Finesse
+﻿# Monitoring Setup — finesse
 
 Basic observability stack using **Prometheus** + **Grafana**. No Docker needed.
 

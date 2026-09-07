@@ -113,7 +113,7 @@ function ContactPage() {
                 Get in Touch
               </h1>
               <p className="text-primary-200 text-sm max-w-2xl">
-                Have questions about Finesse? Want to collaborate or share feedback? We'd love to hear from you.
+                Have questions about finesse? Want to collaborate or share feedback? We'd love to hear from you.
               </p>
             </div>
           </div>
@@ -301,7 +301,7 @@ function ContactPage() {
 
             {/* Quick Actions */}
             <div className="p-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm space-y-3">
-              <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-2">Explore Finesse</h3>
+              <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-2">Explore finesse</h3>
               <Button 
                 as={Link} 
                 to="/dashboard"
@@ -338,7 +338,7 @@ function ContactPage() {
               Frequently Asked Questions
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xl mx-auto">
-              Common questions about Finesse and document intelligence.
+              Common questions about finesse and document intelligence.
             </p>
           </div>
           

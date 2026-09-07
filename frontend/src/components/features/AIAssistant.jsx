@@ -346,9 +346,11 @@ function AIAssistant() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
           <h2 className="flex items-center gap-3 text-2xl font-bold text-gray-900 dark:text-white">
-            <div className="w-9 h-9 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center shadow-md">
-              <Bot className="w-5 h-5 text-white" />
-            </div>
+            <img 
+              src="/notepad3d.png" 
+              alt="finesse AI" 
+              className="w-9 h-9 object-contain drop-shadow-sm" 
+            />
             Smart AI Assistant
           </h2>
           <div className="flex flex-wrap items-center gap-2 mt-1">
@@ -485,7 +487,7 @@ function AIAssistant() {
             🚀 Try Quick Analysis Queries
           </h3>
           <p className="text-xs text-gray-600 dark:text-gray-400 mb-4">
-            Click any query below to see how Finesse processes eligibility against your policy documents:
+            Click any query below to see how finesse processes eligibility against your policy documents:
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {quickQueries.map((quickQuery, i) => (
@@ -511,7 +513,7 @@ function AIAssistant() {
                 <Bot className="w-7 h-7 text-gray-400 dark:text-gray-300" />
               </div>
               <p className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-1">
-                Finesse Policy AI Ready
+                finesse Policy AI Ready
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm">
                 Ask anything about your coverage, procedures, exclusions, or waiting periods.
@@ -611,7 +613,7 @@ function AIAssistant() {
                 <div className="flex items-center gap-3">
                   <div className="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
                   <span className="text-xs text-gray-600 dark:text-gray-300">
-                    Finesse AI is analyzing documents & profile...
+                    finesse AI is analyzing documents & profile...
                   </span>
                 </div>
               </div>
