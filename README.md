@@ -158,7 +158,7 @@ finesse/
 
 ---
 
-## 📊 Monitoring (Prometheus & Grafana)
+## Monitoring (Prometheus & Grafana)
 
 The backend exposes real-time Prometheus metrics at `http://localhost:3001/metrics` tracking HTTP traffic, AI query latency, and document activity.
 
