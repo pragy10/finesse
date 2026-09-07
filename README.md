@@ -1,5 +1,7 @@
 # finesse
 
+![Finesse Banner](https://raw.githubusercontent.com/pragy10/finesse/main/finesse_logo.png)
+
 **AI-powered insurance policy assistant.** Upload your policy PDF, ask questions in plain English, and get answers with exact clause citations.
 
 ---
