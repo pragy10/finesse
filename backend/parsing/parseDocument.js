@@ -1,5 +1,5 @@
 const fs = require("fs");
-const pdfParse = require("pdf-parse");
+const { LlamaParseReader } = require("llama-cloud-services");
 const mammoth = require("mammoth");
 const Tesseract = require("tesseract.js");
 
@@ -8,9 +8,23 @@ async function parseDocument(file) {
   const path = file.path;
 
   if (ext === "pdf") {
-    const dataBuffer = fs.readFileSync(path);
-    const data = await pdfParse(dataBuffer);
-    return data.text;
+    const reader = new LlamaParseReader({
+      apiKey: process.env.LLAMA_CLOUD_API_KEY,
+      resultType: "markdown",
+      parsingInstruction: "Extract all policy benefit tables, daily allowance rates, sub-limits, and exclusions accurately into markdown tables.",
+    });
+
+    const documents = await reader.loadData(path);
+    const parsedText = documents.map((doc) => doc.text).join("\n\n");
+
+    console.log(`\n--- [LlamaParse Output for: ${file.originalname}] ---`);
+    console.log(`[+] Total Pages Extracted: ${documents.length}`);
+    console.log(`[+] Total Characters: ${parsedText.length}`);
+    console.log("--- Sample Content (First 1500 chars) ---");
+    console.log(parsedText.substring(0, 1500));
+    console.log("---------------------------------------------------\n");
+
+    return parsedText;
   }
 
   if (ext === "docx") {

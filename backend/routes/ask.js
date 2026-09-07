@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const qdrantClient = require("../vector/qdrantClient");
 const getEmbedding = require("../vector/embed");
-const { GEMINI_MODEL } = require("../config/aiConfig");
+const { OPENROUTER_MODEL, GEMINI_MODEL } = require("../config/aiConfig");
 const { optionalAuth } = require("../middleware/auth");
 const { 
   generateReasonedResponse, 
@@ -35,6 +35,31 @@ function buildSearchFilter(userId, fileName, documentIds) {
   }
 
   return mustFilters.length > 0 ? { must: mustFilters } : null;
+}
+
+// Helper function to perform vector query safely across Qdrant SDK versions
+async function queryQdrant(collectionName, searchParams) {
+  const queryPayload = {
+    query: searchParams.vector,
+    limit: searchParams.limit || 8,
+    with_payload: searchParams.with_payload ?? true,
+    score_threshold: searchParams.score_threshold
+  };
+
+  if (searchParams.filter) {
+    queryPayload.filter = searchParams.filter;
+  }
+
+  // Use query() for newer SDK versions, fallback to search() if using legacy client instance
+  if (typeof qdrantClient.query === 'function') {
+    const result = await qdrantClient.query(collectionName, queryPayload);
+    return result.points || result.result || result || [];
+  } else if (typeof qdrantClient.search === 'function') {
+    const result = await qdrantClient.search(collectionName, searchParams);
+    return result.result || result || [];
+  } else {
+    throw new Error("qdrantClient does not support query or search operations.");
+  }
 }
 
 router.post("/ask", optionalAuth, async (req, res) => {
@@ -71,14 +96,12 @@ router.post("/ask", optionalAuth, async (req, res) => {
 
     let searchResults = [];
     try {
-      const result = await qdrantClient.search("policy_documents", searchParams);
-      searchResults = result.result || result || [];
+      searchResults = await queryQdrant("policy_documents", searchParams);
     } catch (searchError) {
       console.warn("[!] Qdrant user-filtered search fallback:", searchError.message);
-      // If filtered search returned nothing or error due to legacy un-tagged chunks, fallback without userId filter
+      // Fallback without userId filter
       delete searchParams.filter;
-      const fallbackResult = await qdrantClient.search("policy_documents", searchParams);
-      searchResults = fallbackResult.result || fallbackResult || [];
+      searchResults = await queryQdrant("policy_documents", searchParams);
     }
     
     console.log(`[>] Found ${searchResults.length} relevant chunks`);
@@ -106,7 +129,7 @@ router.post("/ask", optionalAuth, async (req, res) => {
       metadata: {
         chunkCount: searchResults.length,
         timestamp: new Date().toISOString(),
-        model: GEMINI_MODEL
+        model: OPENROUTER_MODEL || GEMINI_MODEL
       }
     });
 
@@ -143,9 +166,9 @@ router.post("/ask-smart", optionalAuth, async (req, res) => {
     
     const searchParams = {
       vector,
-      limit: 10,
+      limit: 15,
       with_payload: true,
-      score_threshold: 0.05
+      score_threshold: 0.01
     };
     
     const filter = buildSearchFilter(userId, fileName, documentIds);
@@ -155,13 +178,11 @@ router.post("/ask-smart", optionalAuth, async (req, res) => {
 
     let searchResults = [];
     try {
-      const result = await qdrantClient.search("policy_documents", searchParams);
-      searchResults = result.result || result || [];
+      searchResults = await queryQdrant("policy_documents", searchParams);
     } catch (searchError) {
       console.warn("[!] Qdrant user-filtered smart search fallback:", searchError.message);
       delete searchParams.filter;
-      const fallbackResult = await qdrantClient.search("policy_documents", searchParams);
-      searchResults = fallbackResult.result || fallbackResult || [];
+      searchResults = await queryQdrant("policy_documents", searchParams);
     }
     
     console.log(`[>] Found ${searchResults.length} relevant chunks`);
@@ -179,7 +200,7 @@ router.post("/ask-smart", optionalAuth, async (req, res) => {
         metadata: {
           chunkCount: searchResults.length,
           timestamp: new Date().toISOString(),
-          model: GEMINI_MODEL,
+          model: OPENROUTER_MODEL || GEMINI_MODEL,
           processingType: 'structured'
         }
       });
@@ -198,7 +219,7 @@ router.post("/ask-smart", optionalAuth, async (req, res) => {
         metadata: {
           chunkCount: searchResults.length,
           timestamp: new Date().toISOString(),
-          model: GEMINI_MODEL,
+          model: OPENROUTER_MODEL || GEMINI_MODEL,
           processingType: 'conversational'
         }
       });

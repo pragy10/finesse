@@ -1,9 +1,7 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { callOpenRouter } = require('../config/openRouterClient');
 const { createAnalysisPrompt } = require('./promptTemplates');
 const { calculateConfidence } = require('./confidenceScoring');
-const { GEMINI_MODEL } = require('../config/aiConfig');
-
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+const { OPENROUTER_MODEL } = require('../config/aiConfig');
 
 async function generateReasonedResponse(userQuery, searchResults, analysisType = 'DOCUMENT_ANALYSIS', conversationHistory = [], userProfile = null) {
   try {
@@ -14,27 +12,24 @@ async function generateReasonedResponse(userQuery, searchResults, analysisType =
       };
     }
 
-    console.log(`[>] Generating Gemini response for: "${userQuery}"`);
+    console.log(`[>] Generating OpenRouter response for: "${userQuery}" (Model: ${OPENROUTER_MODEL})`);
     console.log(`[>] Using ${searchResults.length} document chunks for context`);
 
     const prompt = createAnalysisPrompt(userQuery, searchResults, analysisType, conversationHistory, userProfile);
-    
-    const fullPrompt = `${prompt.system}\n\n${prompt.user}`;
 
-    const model = genAI.getGenerativeModel({ 
-      model: GEMINI_MODEL,
-      generationConfig: {
-        temperature: 0.1,
-        topK: 40,
-        topP: 0.95,
-        maxOutputTokens: 8192,
-      }
+    // Combine system and user prompt to calculate token approximations
+    const fullPrompt = `${prompt.system || ''}\n${prompt.user || ''}`;
+
+    const result = await callOpenRouter({
+      system: prompt.system,
+      user: prompt.user,
+      temperature: 0.1,
+      max_tokens: 4096
     });
 
-    const result = await model.generateContent(fullPrompt);
-    const response = result.response.text();
+    const response = result.text;
     
-    console.log(`[✓] Gemini response generated (${response.length} characters)`);
+    console.log(`[✓] OpenRouter response generated (${response.length} characters)`);
 
     const followUpQuestions = extractNumberedSection(response, 'CLARIFYING QUESTIONS');
 
@@ -43,9 +38,9 @@ async function generateReasonedResponse(userQuery, searchResults, analysisType =
       hasContent: true,
       followUpQuestions,
       usage: {
-        promptTokens: fullPrompt.length / 4,
-        completionTokens: response.length / 4,
-        totalTokens: (fullPrompt.length + response.length) / 4
+        promptTokens: Math.round(fullPrompt.length / 4),
+        completionTokens: Math.round(response.length / 4),
+        totalTokens: Math.round((fullPrompt.length + response.length) / 4)
       }
     };
 
@@ -131,15 +126,7 @@ async function performEnhancedSearch(parsedQuery, searchResults) {
 
 async function generateStructuredDecision(userQuery, searchResults, parsedQuery, conversationHistory = [], userProfile = null) {
   try {
-    console.log(`[>] Generating structured decision for: "${userQuery}"`);
-
-    const model = genAI.getGenerativeModel({ 
-      model: GEMINI_MODEL,
-      generationConfig: {
-        temperature: 0.1,
-        maxOutputTokens: 8192,
-      }
-    });
+    console.log(`[>] Generating structured decision for: "${userQuery}" (Model: ${OPENROUTER_MODEL})`);
 
     const context = searchResults.slice(0, 5).map((result, index) => 
       `Document ${index + 1}: ${result.payload.fileName}
@@ -219,8 +206,12 @@ NEXT STEPS:
 2. [Action 2]
 3. [Action 3]`;
 
-    const result = await model.generateContent(prompt);
-    const response = result.response.text();
+    const result = await callOpenRouter({
+      prompt,
+      temperature: 0.1,
+      max_tokens: 4096
+    });
+    const response = result.text;
 
     const rawDecision = extractField(response, 'DECISION') || '';
     let status = 'NEEDS_CLARIFICATION';
@@ -343,14 +334,6 @@ function extractNumberedSection(text, sectionName) {
 
 async function summarizeDocuments(documents) {
   try {
-    const model = genAI.getGenerativeModel({ 
-      model: GEMINI_MODEL,
-      generationConfig: {
-        temperature: 0.2,
-        maxOutputTokens: 8192,
-      }
-    });
-
     const documentSummaries = await Promise.all(
       documents.map(async (doc) => {
         const prompt = `Summarize this insurance document:
@@ -367,11 +350,15 @@ Focus on:
 
 Provide a clear, structured summary:`;
 
-        const result = await model.generateContent(prompt);
+        const result = await callOpenRouter({
+          prompt,
+          temperature: 0.2,
+          max_tokens: 2048
+        });
         
         return {
           fileName: doc.fileName,
-          summary: result.response.text()
+          summary: result.text
         };
       })
     );
@@ -385,14 +372,6 @@ Provide a clear, structured summary:`;
 
 async function analyzeClaimEligibility(userQuery, searchResults, userProfile = {}) {
   try {
-    const model = genAI.getGenerativeModel({ 
-      model: GEMINI_MODEL,
-      generationConfig: {
-        temperature: 0.1,
-        maxOutputTokens: 8192,
-      }
-    });
-
     const context = searchResults.map((result, index) => 
       `Document ${index + 1}: ${result.payload.fileName}
 Content: ${result.payload.text}
@@ -419,10 +398,14 @@ Provide comprehensive analysis with:
 
 Format clearly with headers for easy reading.`;
 
-    const result = await model.generateContent(prompt);
+    const result = await callOpenRouter({
+      prompt,
+      temperature: 0.1,
+      max_tokens: 4096
+    });
     
     return {
-      response: result.response.text(),
+      response: result.text,
       hasContent: true,
       analysisType: 'claim_eligibility'
     };

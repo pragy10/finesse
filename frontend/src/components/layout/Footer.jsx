@@ -85,7 +85,7 @@ function Footer() {
             © {currentYear} Finesse. Built with care for every policyholder.
           </p>
           <p className="text-xs text-slate-600">
-            Powered by Google Gemini · Qdrant · Supabase · Firebase
+            Powered by OpenRouter AI · Qdrant · Supabase · Firebase
           </p>
         </div>
       </div>

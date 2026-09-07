@@ -45,7 +45,7 @@ function AboutPage() {
   };
 
   const techStack = [
-    { category: "AI & ML", items: ["Google Gemini", "Hugging Face", "Vector Embeddings", "Semantic Search"] },
+    { category: "AI & ML", items: ["OpenRouter AI", "Hugging Face", "Vector Embeddings", "Semantic Search"] },
     { category: "Backend", items: ["Node.js", "Express", "Qdrant Vector DB", "Document Parsing"] },
     { category: "Frontend", items: ["React", "Tailwind CSS", "Framer Motion", "Modern UI/UX"] },
     { category: "Infrastructure", items: ["Cloud Processing", "Real-time API", "Auto-scaling", "Security"] }

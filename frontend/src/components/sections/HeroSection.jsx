@@ -13,7 +13,7 @@ function HeroSection() {
   ];
 
   const docLines = [
-    { label: 'Policy Holder', value: 'Pragya S.' },
+    { label: 'Policy Holder', value: 'Rahul D.' },
     { label: 'Sum Insured', value: '₹10,00,000' },
     { label: 'Waiting Period', value: '2 years (specific illness)' },
     { label: 'Day-Care Cover', value: 'Included' },
